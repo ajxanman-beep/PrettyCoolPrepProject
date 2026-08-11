@@ -544,9 +544,6 @@
             <input id="searchInput" placeholder="Search videos or creators..." />
           </div>
           <div class="video-grid" id="videoList"></div>
-          <section id="playerSection" class="video-player" style="display:none; margin-top:1.25rem;">
-            <video id="activeVideo" controls></video>
-          </section>
         </div>
       </section>
     </div>
@@ -559,8 +556,6 @@
       const gamesList = document.getElementById("gamesList");
       const videoList = document.getElementById("videoList");
       const searchInput = document.getElementById("searchInput");
-      const playerSection = document.getElementById("playerSection");
-      const activeVideo = document.getElementById("activeVideo");
       const mainTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")].filter((btn) => btn.dataset.tab);
       let signedIn = false;
       let username = "Guest";
@@ -709,11 +704,13 @@
         videoList.innerHTML = videos
           .map(
             (video) => `
-              <article class="video-card" data-id="${video.id}" data-url="${video.videoUrl}" data-title="${video.title}" data-author="${video.author}">
-                <h3>${video.title}</h3>
-                <p>${video.description}</p>
-                <div class="video-meta">Posted by ${video.author} · ${getRelativeTime(video.timestamp)}</div>
-                <small>Tap to watch</small>
+              <article class="video-card">
+                <a href="/watch?id=${video.id}" target="_blank" rel="noopener noreferrer">
+                  <h3>${video.title}</h3>
+                  <p>${video.description}</p>
+                  <div class="video-meta">Posted by ${video.author} · ${getRelativeTime(video.timestamp)}</div>
+                  <small>Open watch page</small>
+                </a>
               </article>
             `
           )
@@ -792,16 +789,6 @@
           if (input) input.value = "";
           await loadPosts();
         }
-      });
-
-      videoList.addEventListener("click", (event) => {
-        const card = event.target.closest(".video-card");
-        if (!card) return;
-        const selectedUrl = card.dataset.url;
-        activeVideo.src = selectedUrl;
-        activeVideo.play();
-        playerSection.style.display = "block";
-        playerSection.scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
       const init = async () => {

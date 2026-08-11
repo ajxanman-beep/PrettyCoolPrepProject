@@ -112,6 +112,10 @@ app.get("/videos", (req, res) => {
   res.sendFile(path.join(__dirname, "videos.html"));
 });
 
+app.get("/watch", (req, res) => {
+  res.sendFile(path.join(__dirname, "watch.html"));
+});
+
 app.get("/auth", (req, res) => {
   const session = getSession(req);
   if (session) {
@@ -360,12 +364,22 @@ app.post("/api/community/videos", (req, res) => {
     videoUrl,
     likes: 0,
     shares: 0,
+    views: 0,
     comments: [],
     timestamp: new Date().toISOString()
   };
 
   communityVideos.push(newVideo);
   res.status(201).json(newVideo);
+});
+
+app.get("/api/community/videos/:videoId", (req, res) => {
+  const video = communityVideos.find((item) => item.id === Number(req.params.videoId));
+  if (!video) {
+    return res.status(404).json({ error: "Video not found." });
+  }
+  video.views = (video.views || 0) + 1;
+  res.json({ video });
 });
 
 app.post("/api/community/videos/:videoId/react", (req, res) => {

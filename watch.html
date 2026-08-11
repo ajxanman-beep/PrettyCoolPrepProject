@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PARALLAX Watch</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.14), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.1), transparent 24%),
+          #020402;
+        color: #e5ffee;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page-wrap {
+        width: min(1100px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 3.5rem 1.5rem 4rem;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(2.4rem, 4vw, 3.2rem);
+        letter-spacing: 0.04em;
+        color: #7dff9a;
+      }
+
+      .brand p {
+        margin: 0.6rem 0 0;
+        color: #c7ffd9;
+      }
+
+      .video-shell {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .player-card {
+        background: rgba(10, 16, 11, 0.96);
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        border-radius: 32px;
+        overflow: hidden;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.2);
+      }
+
+      .player-card video {
+        width: 100%;
+        display: block;
+        background: #000;
+      }
+
+      .player-info {
+        padding: 1.6rem 1.8rem 1.4rem;
+      }
+
+      .player-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        line-height: 1.05;
+        color: #e7ffe0;
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.9rem;
+        margin: 1rem 0 0;
+        color: #98ffb4;
+        font-size: 0.95rem;
+      }
+
+      .profile-strip {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.4rem;
+      }
+
+      .profile-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(55, 255, 139, 0.3), rgba(0, 0, 0, 0.25));
+        border: 1px solid rgba(125, 255, 154, 0.18);
+      }
+
+      .profile-copy h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: #d4ffd2;
+      }
+
+      .profile-copy p {
+        margin: 0.3rem 0 0;
+        color: #b7ffc9;
+        font-size: 0.95rem;
+      }
+
+      .action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+
+      .action-button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.95rem 1.4rem;
+        cursor: pointer;
+        font-weight: 700;
+        color: #041107;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+      }
+
+      .detail-panel,
+      .comments-panel {
+        background: rgba(10, 16, 11, 0.94);
+        border: 1px solid rgba(125, 255, 154, 0.16);
+        border-radius: 32px;
+        padding: 1.8rem;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.18);
+      }
+
+      .detail-panel h2,
+      .comments-panel h2 {
+        margin: 0 0 1rem;
+        color: #d4ffda;
+      }
+
+      .detail-panel p {
+        margin: 0;
+        color: #c7ffd9;
+        line-height: 1.8;
+      }
+
+      .comment-list {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .comment-card {
+        padding: 1rem;
+        border-radius: 20px;
+        background: rgba(14, 23, 14, 0.95);
+        border: 1px solid rgba(79, 255, 136, 0.12);
+      }
+
+      .comment-card strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        color: #97ffb8;
+      }
+
+      .comment-card p {
+        margin: 0;
+        color: #d7ffdc;
+        line-height: 1.7;
+      }
+
+      .comment-form {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .comment-form textarea,
+      .comment-form input {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+        font: inherit;
+      }
+
+      .comment-form textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .comment-form button {
+        width: fit-content;
+      }
+
+      .status-note {
+        margin: 0.75rem 0 0;
+        color: #b6ffd3;
+      }
+
+      @media (max-width: 900px) {
+        .page-wrap {
+          padding: 2rem 1rem 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>PARALLAX Watch</h1>
+          <p>Open the video in a full player page with description, profile, views, and comments.</p>
+        </div>
+      </div>
+
+      <div class="video-shell">
+        <section class="player-card">
+          <video id="watchVideo" controls autoplay muted playsinline></video>
+          <div class="player-info">
+            <h1 class="player-title" id="videoTitle">Loading title...</h1>
+            <div class="meta-row" id="videoMeta">Loading details...</div>
+            <div class="profile-strip">
+              <div class="profile-avatar"></div>
+              <div class="profile-copy">
+                <h3 id="videoAuthor">Creator</h3>
+                <p id="videoTimestamp">Posted today</p>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="action-button" id="likeButton">Like</button>
+              <button class="action-button" id="shareButton">Share</button>
+            </div>
+            <p class="status-note" id="statusNote"></p>
+          </div>
+        </section>
+
+        <section class="detail-panel">
+          <h2>Description</h2>
+          <p id="videoDescription">Loading video description...</p>
+        </section>
+
+        <section class="comments-panel">
+          <h2>Comments</h2>
+          <div class="comment-list" id="commentList"></div>
+          <form id="commentForm" class="comment-form">
+            <textarea id="commentText" placeholder="Add a comment..."></textarea>
+            <button class="action-button" type="submit">Post comment</button>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const watchVideo = document.getElementById("watchVideo");
+      const videoTitle = document.getElementById("videoTitle");
+      const videoMeta = document.getElementById("videoMeta");
+      const videoAuthor = document.getElementById("videoAuthor");
+      const videoTimestamp = document.getElementById("videoTimestamp");
+      const videoDescription = document.getElementById("videoDescription");
+      const commentList = document.getElementById("commentList");
+      const commentForm = document.getElementById("commentForm");
+      const commentText = document.getElementById("commentText");
+      const statusNote = document.getElementById("statusNote");
+      const likeButton = document.getElementById("likeButton");
+      const shareButton = document.getElementById("shareButton");
+
+      const api = async (url, options = {}) => {
+        const res = await fetch(url, options);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw data;
+        return data;
+      };
+
+      const queryParams = new URLSearchParams(window.location.search);
+      const videoId = queryParams.get("id");
+      let currentVideo = null;
+
+      const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+      };
+
+      const renderComments = (comments) => {
+        if (!comments || !comments.length) {
+          commentList.innerHTML = `<div class="comment-card"><strong>No comments yet</strong><p>Be the first to start the conversation.</p></div>`;
+          return;
+        }
+
+        commentList.innerHTML = comments
+          .map(
+            (comment) => `
+            <div class="comment-card">
+              <strong>${comment.author}</strong>
+              <p>${comment.text}</p>
+            </div>
+          `
+          )
+          .join("");
+      };
+
+      const loadVideo = async () => {
+        if (!videoId) {
+          statusNote.textContent = "Missing video ID in the URL.";
+          return;
+        }
+
+        try {
+          const data = await api(`/api/community/videos/${videoId}`);
+          currentVideo = data.video;
+          watchVideo.src = currentVideo.videoUrl;
+          videoTitle.textContent = currentVideo.title;
+          videoMeta.innerHTML = `${currentVideo.views || 0} views · ${currentVideo.likes || 0} likes · ${formatTime(currentVideo.timestamp)}`;
+          videoAuthor.textContent = currentVideo.author;
+          videoTimestamp.textContent = `Published ${formatTime(currentVideo.timestamp)}`;
+          videoDescription.textContent = currentVideo.description;
+          renderComments(currentVideo.comments);
+          statusNote.textContent = "";
+        } catch (err) {
+          statusNote.textContent = err.error || "Could not load this video.";
+        }
+      };
+
+      likeButton.addEventListener("click", async () => {
+        if (!currentVideo) return;
+        try {
+          await api(`/api/community/videos/${currentVideo.id}/react`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reaction: "like" })
+          });
+          await loadVideo();
+        } catch (err) {
+          statusNote.textContent = err.error || "Unable to like video.";
+        }
+      });
+
+      shareButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          statusNote.textContent = "Link copied to clipboard!";
+        } catch (err) {
+          statusNote.textContent = "Copy failed. Please copy the URL manually.";
+        }
+      });
+
+      commentForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!currentVideo) return;
+        const text = commentText.value.trim();
+        if (!text) return;
+
+        try {
+          await api(`/api/community/videos/${currentVideo.id}/comment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ comment: text })
+          });
+          commentText.value = "";
+          await loadVideo();
+        } catch (err) {
+          statusNote.textContent = err.error || "Unable to post comment.";
+        }
+      });
+
+      loadVideo();
+    </script>
+  </body>
+</html>

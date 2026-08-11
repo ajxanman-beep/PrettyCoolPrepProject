@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PARALLAX Community</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.16), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.12), transparent 24%),
+          #020402;
+        color: #e5ffee;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        padding: 2rem 1.5rem;
+        background: rgba(0, 0, 0, 0.88);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        transform: translateX(-100%);
+        transition: transform 0.32s ease;
+        z-index: 20;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar h2 {
+        margin: 0 0 1.5rem;
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.6rem;
+        letter-spacing: 0.08em;
+        color: #7fff7f;
+      }
+
+      .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .menu-list li {
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .menu-list li a {
+        display: block;
+        width: 100%;
+        min-height: 100%;
+        padding: 0.95rem 1rem;
+        border-radius: inherit;
+        color: inherit;
+      }
+
+      .menu-list li:hover {
+        background: rgba(49, 255, 140, 0.12);
+        border-color: rgba(49, 255, 140, 0.4);
+      }
+
+      .hamburger {
+        position: fixed;
+        left: 1rem;
+        top: 1rem;
+        border: none;
+        background: rgba(0, 0, 0, 0.78);
+        color: #7cff75;
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: 1rem;
+        display: grid;
+        place-items: center;
+        z-index: 30;
+        cursor: pointer;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      }
+
+      .hamburger div,
+      .hamburger div::before,
+      .hamburger div::after {
+        width: 1.35rem;
+        height: 0.14rem;
+        background: currentColor;
+        border-radius: 999px;
+        position: relative;
+      }
+
+      .hamburger div::before,
+      .hamburger div::after {
+        content: "";
+        position: absolute;
+        left: 0;
+      }
+
+      .hamburger div::before {
+        top: -0.5rem;
+      }
+
+      .hamburger div::after {
+        top: 0.5rem;
+      }
+
+      .page-wrap {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4.5rem 2rem 4rem 2rem;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        align-items: center;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: 2rem;
+        letter-spacing: 0.04em;
+        color: #7dff9a;
+      }
+
+      .brand p {
+        margin: 0.4rem 0 0;
+        color: #c7ffd9;
+      }
+
+      .user-note {
+        color: #b6ffd3;
+        font-size: 0.95rem;
+      }
+
+      .section {
+        margin-top: 3rem;
+      }
+
+      .section h2 {
+        margin: 0 0 1rem;
+        font-size: clamp(2rem, 4vw, 2.6rem);
+        color: #d4ffda;
+      }
+
+      .section-description {
+        margin: 0 0 1.5rem;
+        color: #c7ffd7;
+        max-width: 52rem;
+      }
+
+      .section-grid {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .panel {
+        background: rgba(10, 16, 11, 0.94);
+        border: 1px solid rgba(125, 255, 154, 0.16);
+        border-radius: 32px;
+        padding: 1.75rem;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.22);
+      }
+
+      .panel h3 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        color: #96ffb0;
+      }
+
+      .panel p {
+        margin: 0;
+        color: #c7ffdc;
+        line-height: 1.75;
+      }
+
+      .post-form,
+      .post-card,
+      .game-card,
+      .video-card {
+        width: 100%;
+      }
+
+      .post-form .form-row,
+      .video-form .form-row,
+      .game-form .form-row,
+      .comment-row {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .input-group {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .input-group label {
+        color: #9effbc;
+        font-size: 0.95rem;
+      }
+
+      .input-group input,
+      .input-group textarea,
+      .input-group select {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+      }
+
+      .input-group textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .primary-button,
+      .secondary-button,
+      .comment-button {
+        border: none;
+        border-radius: 999px;
+        padding: 1rem 1.4rem;
+        font-weight: 700;
+        color: #041107;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+
+      .secondary-button {
+        background: rgba(17, 30, 16, 0.82);
+        color: #b9ffd4;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+      }
+
+      .primary-button:hover,
+      .comment-button:hover,
+      .secondary-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .post-card,
+      .game-card,
+      .video-card {
+        border-radius: 28px;
+        padding: 1.5rem;
+        background: rgba(7, 15, 9, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.14);
+      }
+
+      .post-meta,
+      .video-meta,
+      .game-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.85rem;
+        color: #9effb8;
+        font-size: 0.92rem;
+      }
+
+      .attachments {
+        margin: 1rem 0;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .attachment-preview {
+        border-radius: 18px;
+        background: rgba(18, 29, 20, 0.95);
+        padding: 1rem;
+        border: 1px solid rgba(125, 255, 154, 0.16);
+      }
+
+      .attachment-preview img,
+      .attachment-preview video,
+      .attachment-preview iframe {
+        width: 100%;
+        border-radius: 18px;
+      }
+
+      .post-actions,
+      .video-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .reaction-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: #c7ffd7;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .reactions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 0.85rem;
+      }
+
+      .comments {
+        margin-top: 1rem;
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .comment-card {
+        padding: 1rem;
+        border-radius: 18px;
+        background: rgba(12, 23, 15, 0.95);
+        color: #d8ffd2;
+        border: 1px solid rgba(79, 255, 136, 0.12);
+      }
+
+      .comment-card strong {
+        display: block;
+        color: #9efcb6;
+        margin-bottom: 0.4rem;
+      }
+
+      @media (max-width: 900px) {
+        .page-wrap {
+          padding: 3rem 1.5rem 3rem 1.5rem;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="hamburger" aria-label="Open menu" onclick="toggleSidebar()">
+      <div></div>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+      <h2>MENU</h2>
+      <ul class="menu-list">
+        <li><a href="/">Home</a></li>
+        <li><a href="/chat">Chat</a></li>
+        <li><a href="/community">Community</a></li>
+        <li><a href="/auth">Account</a></li>
+        <li><a class="logout-button" href="/logout">Logout</a></li>
+      </ul>
+    </aside>
+
+    <div class="page-wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>PARALLAX</h1>
+          <p>Community hub: forum, games, and social feed.</p>
+        </div>
+        <p class="user-note" id="userNote">Loading community…</p>
+      </div>
+
+      <section class="section">
+        <h2>Welcome to the Community</h2>
+        <p class="section-description">Share ideas, upload games, and post videos with comments, reactions, and community feedback. If you want to join the conversation, sign in or sign up.</p>
+      </section>
+
+      <section class="section">
+        <div class="panel">
+          <h3>Community Forum</h3>
+          <p>Post forum-style updates with attachments, links, and comments.</p>
+          <form class="post-form" id="forumForm">
+            <div class="form-row">
+              <div class="input-group">
+                <label for="postTitle">Title</label>
+                <input id="postTitle" name="title" placeholder="Post title" required />
+              </div>
+              <div class="input-group">
+                <label for="postBody">Message</label>
+                <textarea id="postBody" name="body" placeholder="Write your post here..." required></textarea>
+              </div>
+              <div class="input-group">
+                <label for="attachmentUrl">Attachment URL</label>
+                <input id="attachmentUrl" name="attachmentUrl" placeholder="Image, GIF, video, or file link" />
+              </div>
+              <div class="input-group">
+                <label for="attachmentType">Attachment Type</label>
+                <select id="attachmentType" name="attachmentType">
+                  <option value="image">Image</option>
+                  <option value="gif">GIF</option>
+                  <option value="video">Video</option>
+                  <option value="link">Link</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="postLink">Optional Link</label>
+                <input id="postLink" name="linkUrl" placeholder="Optional link to a project or resource" />
+              </div>
+              <button class="primary-button" type="submit">Create post</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="postsList" class="section-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="panel">
+          <h3>Community Games</h3>
+          <p>Upload an index.html game URL and let others try your creation.</p>
+          <form class="game-form" id="gameForm">
+            <div class="form-row">
+              <div class="input-group">
+                <label for="gameTitle">Game Title</label>
+                <input id="gameTitle" name="title" placeholder="Game name" required />
+              </div>
+              <div class="input-group">
+                <label for="gameDescription">Description</label>
+                <textarea id="gameDescription" name="description" placeholder="What makes your game fun?" required></textarea>
+              </div>
+              <div class="input-group">
+                <label for="gameUrl">Game URL</label>
+                <input id="gameUrl" name="gameUrl" placeholder="https://.../index.html" required />
+              </div>
+              <button class="primary-button" type="submit">Upload game</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="gamesList" class="section-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="panel">
+          <h3>Video Feed</h3>
+          <p>Post video content with likes, comments, and shares. Keep it friendly and creative.</p>
+          <form class="video-form" id="videoForm">
+            <div class="form-row">
+              <div class="input-group">
+                <label for="videoTitle">Video Title</label>
+                <input id="videoTitle" name="title" placeholder="Video title" required />
+              </div>
+              <div class="input-group">
+                <label for="videoDescription">Description</label>
+                <textarea id="videoDescription" name="description" placeholder="Describe your post" required></textarea>
+              </div>
+              <div class="input-group">
+                <label for="videoUrl">Video URL</label>
+                <input id="videoUrl" name="videoUrl" placeholder="Video link or embed URL" required />
+              </div>
+              <button class="primary-button" type="submit">Post video</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="videosList" class="section-grid"></div>
+      </section>
+    </div>
+
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const hamburger = document.querySelector(".hamburger");
+      const userNote = document.getElementById("userNote");
+      const postsList = document.getElementById("postsList");
+      const gamesList = document.getElementById("gamesList");
+      const videosList = document.getElementById("videosList");
+      const forumForm = document.getElementById("forumForm");
+      const gameForm = document.getElementById("gameForm");
+      const videoForm = document.getElementById("videoForm");
+      let signedIn = false;
+      let username = "Guest";
+
+      function toggleSidebar() {
+        sidebar.classList.toggle("open");
+      }
+
+      document.addEventListener("click", (event) => {
+        if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains("open")) {
+          sidebar.classList.remove("open");
+        }
+      });
+
+      const api = async (url, options = {}) => {
+        const res = await fetch(url, options);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw data;
+        }
+        return data;
+      };
+
+      const getRelativeTime = (timestamp) => {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 1) return "just now";
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
+      };
+
+      const loadUser = async () => {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (!res.ok) throw new Error("no session");
+          const data = await res.json();
+          signedIn = true;
+          username = data.username;
+          userNote.textContent = `Signed in as ${username}`;
+        } catch (err) {
+          signedIn = false;
+          username = "Guest";
+          userNote.textContent = "Browse and explore. Sign in to post content.";
+        }
+      };
+
+      const renderAttachment = (post) => {
+        if (!post.attachmentUrl) return "";
+        const safeUrl = post.attachmentUrl;
+        if (post.attachmentType === "video") {
+          return `<div class="attachment-preview"><video controls src="${safeUrl}"></video></div>`;
+        }
+        if (post.attachmentType === "image" || post.attachmentType === "gif") {
+          return `<div class="attachment-preview"><img src="${safeUrl}" alt="Attachment preview" /></div>`;
+        }
+        return `<div class="attachment-preview"><a href="${safeUrl}" target="_blank" rel="noreferrer">Open attachment</a></div>`;
+      };
+
+      const renderLink = (linkUrl) => {
+        if (!linkUrl) return "";
+        return `<p class=\"attachment-preview\"><a href=\"${linkUrl}\" target=\"_blank\" rel=\"noreferrer\">${linkUrl}</a></p>`;
+      };
+
+      const renderPosts = (posts) => {
+        if (!posts.length) {
+          postsList.innerHTML = `<div class="panel"><p>No posts yet. Create the first community update.</p></div>`;
+          return;
+        }
+
+        postsList.innerHTML = posts
+          .map(
+            (post) => `
+            <article class="post-card" data-post-id="${post.id}">
+              <h3>${post.title}</h3>
+              <p>${post.body}</p>
+              <div class="post-meta">Posted by ${post.author} · ${getRelativeTime(post.timestamp)}</div>
+              <div class="attachments">
+                ${renderAttachment(post)}
+                ${renderLink(post.linkUrl)}
+              </div>
+              <div class="reactions">
+                <div class="reaction-pill post-like" data-post-id="${post.id}">👍 ${post.likes}</div>
+                <div class="reaction-pill post-dislike" data-post-id="${post.id}">👎 ${post.dislikes}</div>
+              </div>
+              <div class="comment-row">
+                <input type="text" class="comment-input" data-post-id="${post.id}" placeholder="Write a comment..." />
+                <button class="comment-button post-comment" data-post-id="${post.id}">Comment</button>
+              </div>
+              <div class="comments">
+                ${post.comments
+                  .map(
+                    (comment) => `
+                    <div class="comment-card">
+                      <strong>${comment.author}</strong>
+                      <p>${comment.text}</p>
+                    </div>
+                  `
+                  )
+                  .join("")}
+              </div>
+            </article>
+          `
+          )
+          .join("");
+      };
+
+      const renderGames = (games) => {
+        if (!games.length) {
+          gamesList.innerHTML = `<div class="panel"><p>No uploaded games yet. Share your next playable idea.</p></div>`;
+          return;
+        }
+        gamesList.innerHTML = games
+          .map(
+            (game) => `
+            <article class="game-card">
+              <h3>${game.title}</h3>
+              <p>${game.description}</p>
+              <div class="game-meta">Uploaded by ${game.author} · ${getRelativeTime(game.timestamp)}</div>
+              <div class="attachments">
+                <div class="attachment-preview"><a href="${game.gameUrl}" target="_blank" rel="noreferrer">Open game</a></div>
+              </div>
+            </article>
+          `
+          )
+          .join("");
+      };
+
+      const renderVideos = (videos) => {
+        if (!videos.length) {
+          videosList.innerHTML = `<div class="panel"><p>No video posts yet. Share a new clip.</p></div>`;
+          return;
+        }
+
+        videosList.innerHTML = videos
+          .map(
+            (video) => `
+            <article class="video-card" data-video-id="${video.id}">
+              <h3>${video.title}</h3>
+              <p>${video.description}</p>
+              <div class="video-meta">Posted by ${video.author} · ${getRelativeTime(video.timestamp)}</div>
+              <div class="attachments">
+                <div class="attachment-preview"><video controls src="${video.videoUrl}"></video></div>
+              </div>
+              <div class="video-actions">
+                <div class="reaction-pill video-like" data-video-id="${video.id}">❤️ ${video.likes}</div>
+                <div class="reaction-pill video-share" data-video-id="${video.id}">🔁 ${video.shares}</div>
+              </div>
+              <div class="comment-row">
+                <input type="text" class="comment-input" data-video-id="${video.id}" placeholder="Write a comment..." />
+                <button class="comment-button video-comment" data-video-id="${video.id}">Comment</button>
+              </div>
+              <div class="comments">
+                ${video.comments
+                  .map(
+                    (comment) => `
+                    <div class="comment-card">
+                      <strong>${comment.author}</strong>
+                      <p>${comment.text}</p>
+                    </div>
+                  `
+                  )
+                  .join("")}
+              </div>
+            </article>
+          `
+          )
+          .join("");
+      };
+
+      const loadPosts = async () => {
+        const data = await api("/api/community/posts");
+        renderPosts(data.posts);
+      };
+
+      const loadGames = async () => {
+        const data = await api("/api/community/games");
+        renderGames(data.games);
+      };
+
+      const loadVideos = async () => {
+        const data = await api("/api/community/videos");
+        renderVideos(data.videos);
+      };
+
+      const refreshCommunity = async () => {
+        await Promise.all([loadPosts(), loadGames(), loadVideos()]);
+      };
+
+      forumForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!signedIn) {
+          alert("Sign in to create a community post.");
+          return;
+        }
+        const result = await api("/api/community/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: document.getElementById("postTitle").value.trim(),
+            body: document.getElementById("postBody").value.trim(),
+            attachmentUrl: document.getElementById("attachmentUrl").value.trim(),
+            attachmentType: document.getElementById("attachmentType").value,
+            linkUrl: document.getElementById("postLink").value.trim()
+          })
+        });
+
+        document.getElementById("postTitle").value = "";
+        document.getElementById("postBody").value = "";
+        document.getElementById("attachmentUrl").value = "";
+        document.getElementById("postLink").value = "";
+        await loadPosts();
+      });
+
+      gameForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!signedIn) {
+          alert("Sign in to upload a game.");
+          return;
+        }
+        await api("/api/community/games", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: document.getElementById("gameTitle").value.trim(),
+            description: document.getElementById("gameDescription").value.trim(),
+            gameUrl: document.getElementById("gameUrl").value.trim()
+          })
+        });
+
+        document.getElementById("gameTitle").value = "";
+        document.getElementById("gameDescription").value = "";
+        document.getElementById("gameUrl").value = "";
+        await loadGames();
+      });
+
+      videoForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!signedIn) {
+          alert("Sign in to share a video.");
+          return;
+        }
+        await api("/api/community/videos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: document.getElementById("videoTitle").value.trim(),
+            description: document.getElementById("videoDescription").value.trim(),
+            videoUrl: document.getElementById("videoUrl").value.trim()
+          })
+        });
+
+        document.getElementById("videoTitle").value = "";
+        document.getElementById("videoDescription").value = "";
+        document.getElementById("videoUrl").value = "";
+        await loadVideos();
+      });
+
+      postsList.addEventListener("click", async (event) => {
+        const postId = event.target.dataset.postId;
+        if (!postId) return;
+
+        if (event.target.classList.contains("post-like") || event.target.classList.contains("post-dislike")) {
+          const reaction = event.target.classList.contains("post-like") ? "like" : "dislike";
+          await api(`/api/community/posts/${postId}/react`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reaction })
+          });
+          await loadPosts();
+          return;
+        }
+
+        if (event.target.classList.contains("post-comment")) {
+          const input = document.querySelector(`.comment-input[data-post-id='${postId}']`);
+          const text = input?.value.trim();
+          if (!text) return;
+          await api(`/api/community/posts/${postId}/comment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ comment: text })
+          });
+          if (input) input.value = "";
+          await loadPosts();
+        }
+      });
+
+      videosList.addEventListener("click", async (event) => {
+        const videoId = event.target.dataset.videoId;
+        if (!videoId) return;
+
+        if (event.target.classList.contains("video-like")) {
+          await api(`/api/community/videos/${videoId}/react`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reaction: "like" })
+          });
+          await loadVideos();
+          return;
+        }
+
+        if (event.target.classList.contains("video-share")) {
+          await api(`/api/community/videos/${videoId}/react`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reaction: "share" })
+          });
+          await loadVideos();
+          return;
+        }
+
+        if (event.target.classList.contains("video-comment")) {
+          const input = document.querySelector(`.comment-input[data-video-id='${videoId}']`);
+          const text = input?.value.trim();
+          if (!text) return;
+          await api(`/api/community/videos/${videoId}/comment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ comment: text })
+          });
+          if (input) input.value = "";
+          await loadVideos();
+        }
+      });
+
+      const init = async () => {
+        await loadUser();
+        await refreshCommunity();
+      };
+
+      init();
+    </script>
+  </body>
+</html>

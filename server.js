@@ -15,6 +15,9 @@ const featuredRooms = [
 const users = {};
 const sessions = {};
 const chatMessages = [];
+const communityPosts = [];
+const communityGames = [];
+const communityVideos = [];
 
 const hashPassword = (password) => crypto.createHash("sha256").update(password).digest("hex");
 
@@ -55,6 +58,14 @@ app.get("/chat", (req, res) => {
     return res.redirect("/auth");
   }
   res.sendFile(path.join(__dirname, "chat.html"));
+});
+
+app.get("/community", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.redirect("/auth");
+  }
+  res.sendFile(path.join(__dirname, "community.html"));
 });
 
 app.get("/auth", (req, res) => {
@@ -131,6 +142,184 @@ app.get("/api/status", (req, res) => {
 
 app.get("/api/community", (req, res) => {
   res.json({ community: "PARALLAX", activeRooms: featuredRooms.length, rooms: featuredRooms });
+});
+
+app.get("/api/community/posts", (req, res) => {
+  res.json({ posts: communityPosts.slice().reverse() });
+});
+
+app.post("/api/community/posts", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const { title, body, attachmentUrl, attachmentType, linkUrl } = req.body;
+  if (!title || !body) {
+    return res.status(400).json({ error: "Title and body are required." });
+  }
+
+  const newPost = {
+    id: communityPosts.length + 1,
+    author: session.username,
+    title,
+    body,
+    attachmentUrl: attachmentUrl || "",
+    attachmentType: attachmentType || "link",
+    linkUrl: linkUrl || "",
+    likes: 0,
+    dislikes: 0,
+    comments: [],
+    timestamp: new Date().toISOString()
+  };
+
+  communityPosts.push(newPost);
+  res.status(201).json(newPost);
+});
+
+app.post("/api/community/posts/:postId/react", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const post = communityPosts.find((item) => item.id === Number(req.params.postId));
+  if (!post) {
+    return res.status(404).json({ error: "Post not found." });
+  }
+
+  const { reaction } = req.body;
+  if (reaction === "like") {
+    post.likes += 1;
+  } else if (reaction === "dislike") {
+    post.dislikes += 1;
+  } else {
+    return res.status(400).json({ error: "Invalid reaction." });
+  }
+
+  res.json(post);
+});
+
+app.post("/api/community/posts/:postId/comment", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const post = communityPosts.find((item) => item.id === Number(req.params.postId));
+  if (!post) {
+    return res.status(404).json({ error: "Post not found." });
+  }
+
+  const { comment } = req.body;
+  if (!comment) {
+    return res.status(400).json({ error: "Comment text is required." });
+  }
+
+  post.comments.push({ author: session.username, text: comment, timestamp: new Date().toISOString() });
+  res.json(post);
+});
+
+app.get("/api/community/games", (req, res) => {
+  res.json({ games: communityGames.slice().reverse() });
+});
+
+app.post("/api/community/games", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const { title, description, gameUrl } = req.body;
+  if (!title || !description || !gameUrl) {
+    return res.status(400).json({ error: "Title, description, and game URL are required." });
+  }
+
+  const newGame = {
+    id: communityGames.length + 1,
+    author: session.username,
+    title,
+    description,
+    gameUrl,
+    timestamp: new Date().toISOString()
+  };
+
+  communityGames.push(newGame);
+  res.status(201).json(newGame);
+});
+
+app.get("/api/community/videos", (req, res) => {
+  res.json({ videos: communityVideos.slice().reverse() });
+});
+
+app.post("/api/community/videos", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const { title, description, videoUrl } = req.body;
+  if (!title || !description || !videoUrl) {
+    return res.status(400).json({ error: "Title, description, and video URL are required." });
+  }
+
+  const newVideo = {
+    id: communityVideos.length + 1,
+    author: session.username,
+    title,
+    description,
+    videoUrl,
+    likes: 0,
+    shares: 0,
+    comments: [],
+    timestamp: new Date().toISOString()
+  };
+
+  communityVideos.push(newVideo);
+  res.status(201).json(newVideo);
+});
+
+app.post("/api/community/videos/:videoId/react", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const video = communityVideos.find((item) => item.id === Number(req.params.videoId));
+  if (!video) {
+    return res.status(404).json({ error: "Video not found." });
+  }
+
+  const { reaction } = req.body;
+  if (reaction === "like") {
+    video.likes += 1;
+  } else if (reaction === "share") {
+    video.shares += 1;
+  } else {
+    return res.status(400).json({ error: "Invalid reaction." });
+  }
+
+  res.json(video);
+});
+
+app.post("/api/community/videos/:videoId/comment", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const video = communityVideos.find((item) => item.id === Number(req.params.videoId));
+  if (!video) {
+    return res.status(404).json({ error: "Video not found." });
+  }
+
+  const { comment } = req.body;
+  if (!comment) {
+    return res.status(400).json({ error: "Comment text is required." });
+  }
+
+  video.comments.push({ author: session.username, text: comment, timestamp: new Date().toISOString() });
+  res.json(video);
 });
 
 app.get("/api/chat/messages", (req, res) => {

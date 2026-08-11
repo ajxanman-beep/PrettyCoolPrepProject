@@ -319,7 +319,12 @@
       .attachment-preview video,
       .attachment-preview iframe {
         width: 100%;
+        max-height: 280px;
+        object-fit: contain;
         border-radius: 18px;
+      }
+      .attachment-preview {
+        overflow: hidden;
       }
 
       .reactions,
@@ -509,6 +514,10 @@
                   <label for="postLink">Optional Link</label>
                   <input id="postLink" name="linkUrl" placeholder="Optional link to a resource" />
                 </div>
+                <div class="input-group">
+                  <label for="attachmentFile">Attachment file</label>
+                  <input id="attachmentFile" name="attachmentFile" type="file" accept="image/*,video/*" />
+                </div>
                 <button class="primary-button" type="submit">Create post</button>
               </div>
             </form>
@@ -545,7 +554,11 @@
                 </div>
                 <div class="input-group">
                   <label for="videoUrl">Video URL</label>
-                  <input id="videoUrl" name="videoUrl" placeholder="Video link or embed URL" required />
+                  <input id="videoUrl" name="videoUrl" placeholder="Video link or embed URL" />
+                </div>
+                <div class="input-group">
+                  <label for="videoFile">Video file</label>
+                  <input id="videoFile" name="videoFile" type="file" accept="video/*" />
                 </div>
                 <button class="primary-button" type="submit">Post video</button>
               </div>
@@ -583,6 +596,8 @@
       const forumForm = document.getElementById("forumForm");
       const gameForm = document.getElementById("gameForm");
       const videoForm = document.getElementById("videoForm");
+      const attachmentFileInput = document.getElementById("attachmentFile");
+      const videoFileInput = document.getElementById("videoFile");
       const openCreate = document.getElementById("openCreate");
       const createPanel = document.getElementById("createPanel");
       const mainTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")].filter((btn) => btn.dataset.tab);
@@ -607,6 +622,16 @@
           throw data;
         }
         return data;
+      };
+
+      const uploadFileToCloudinary = async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const result = await api("/api/uploads", {
+          method: "POST",
+          body: formData
+        });
+        return result.secure_url || result.url;
       };
 
       const getRelativeTime = (timestamp) => {
@@ -635,13 +660,24 @@
         }
       };
 
+      const guessAttachmentType = (url, explicitType) => {
+        if (!url) return "link";
+        if (explicitType && explicitType !== "link") return explicitType;
+        const lowerUrl = url.toLowerCase();
+        if (lowerUrl.endsWith(".mp4") || lowerUrl.endsWith(".webm") || lowerUrl.endsWith(".ogg")) return "video";
+        if (lowerUrl.endsWith(".gif")) return "gif";
+        if (lowerUrl.match(/\.(jpg|jpeg|png|webp|avif)$/)) return "image";
+        return "link";
+      };
+
       const renderAttachment = (post) => {
         if (!post.attachmentUrl) return "";
         const safeUrl = post.attachmentUrl;
-        if (post.attachmentType === "video") {
+        const type = guessAttachmentType(safeUrl, post.attachmentType);
+        if (type === "video") {
           return `<div class="attachment-preview"><video controls src="${safeUrl}"></video></div>`;
         }
-        if (post.attachmentType === "image" || post.attachmentType === "gif") {
+        if (type === "image" || type === "gif") {
           return `<div class="attachment-preview"><img src="${safeUrl}" alt="Attachment preview" /></div>`;
         }
         return `<div class="attachment-preview"><a href="${safeUrl}" target="_blank" rel="noreferrer">Open attachment</a></div>`;
@@ -810,13 +846,20 @@
           alert("Sign in to create a community post.");
           return;
         }
+
+        let attachmentUrl = document.getElementById("attachmentUrl").value.trim();
+        const attachmentFile = attachmentFileInput.files[0];
+        if (attachmentFile) {
+          attachmentUrl = await uploadFileToCloudinary(attachmentFile);
+        }
+
         await api("/api/community/posts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: document.getElementById("postTitle").value.trim(),
             body: document.getElementById("postBody").value.trim(),
-            attachmentUrl: document.getElementById("attachmentUrl").value.trim(),
+            attachmentUrl,
             attachmentType: document.getElementById("attachmentType").value,
             linkUrl: document.getElementById("postLink").value.trim()
           })
@@ -826,6 +869,7 @@
         document.getElementById("postBody").value = "";
         document.getElementById("attachmentUrl").value = "";
         document.getElementById("postLink").value = "";
+        attachmentFileInput.value = "";
         await loadPosts();
       });
 
@@ -857,19 +901,27 @@
           alert("Sign in to share a video.");
           return;
         }
+
+        let videoUrl = document.getElementById("videoUrl").value.trim();
+        const videoFile = videoFileInput.files[0];
+        if (videoFile) {
+          videoUrl = await uploadFileToCloudinary(videoFile);
+        }
+
         await api("/api/community/videos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: document.getElementById("videoTitle").value.trim(),
             description: document.getElementById("videoDescription").value.trim(),
-            videoUrl: document.getElementById("videoUrl").value.trim()
+            videoUrl
           })
         });
 
         document.getElementById("videoTitle").value = "";
         document.getElementById("videoDescription").value = "";
         document.getElementById("videoUrl").value = "";
+        videoFileInput.value = "";
         await loadVideos();
       });
 

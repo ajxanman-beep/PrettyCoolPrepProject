@@ -1,10 +1,21 @@
 const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
+const multer = require("multer");
+const { Readable } = require("stream");
+const cloudinary = require("cloudinary").v2;
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "YOUR_CLOUD_NAME",
+  api_key: process.env.CLOUDINARY_API_KEY || "586198498726618",
+  api_secret: process.env.CLOUDINARY_API_SECRET || "0HFipV4PrdIIastxqdAZSR9dA-M"
+});
 
 const featuredRooms = [
   { id: 1, title: "Launch Lounge", description: "Meet founders and creators sharing their latest projects." },
@@ -55,7 +66,7 @@ app.get("/", (req, res) => {
 app.get("/chat", (req, res) => {
   const session = getSession(req);
   if (!session) {
-    return res.redirect("/auth");
+    return res.redirect(`/auth?redirect=${encodeURIComponent(req.originalUrl)}`);
   }
   res.sendFile(path.join(__dirname, "chat.html"));
 });
@@ -63,7 +74,7 @@ app.get("/chat", (req, res) => {
 app.get("/community", (req, res) => {
   const session = getSession(req);
   if (!session) {
-    return res.redirect("/auth");
+    return res.redirect(`/auth?redirect=${encodeURIComponent(req.originalUrl)}`);
   }
   res.sendFile(path.join(__dirname, "community.html"));
 });
@@ -71,7 +82,8 @@ app.get("/community", (req, res) => {
 app.get("/auth", (req, res) => {
   const session = getSession(req);
   if (session) {
-    return res.redirect("/chat");
+    const redirectTo = req.query.redirect && req.query.redirect.startsWith("/") ? req.query.redirect : "/chat";
+    return res.redirect(redirectTo);
   }
   res.sendFile(path.join(__dirname, "auth.html"));
 });
@@ -142,6 +154,40 @@ app.get("/api/status", (req, res) => {
 
 app.get("/api/community", (req, res) => {
   res.json({ community: "PARALLAX", activeRooms: featuredRooms.length, rooms: featuredRooms });
+});
+
+const streamUpload = (buffer, options = {}) =>
+  new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    });
+    Readable.from(buffer).pipe(uploadStream);
+  });
+
+app.post("/api/uploads", upload.single("file"), async (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded." });
+  }
+
+  try {
+    const result = await streamUpload(req.file.buffer, {
+      resource_type: "auto",
+      folder: "parallax-community",
+      use_filename: true,
+      unique_filename: true,
+      overwrite: false
+    });
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Cloudinary upload failed:", error);
+    res.status(500).json({ error: "Upload failed." });
+  }
 });
 
 app.get("/api/community/posts", (req, res) => {

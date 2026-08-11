@@ -500,8 +500,7 @@
       const userNote = document.getElementById("userNote");
       const postsList = document.getElementById("postsList");
       const gamesList = document.getElementById("gamesList");
-      const forumForm = null;
-      const gameForm = null;
+      const mainTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")].filter((btn) => btn.dataset.tab);
       let signedIn = false;
       let username = "Guest";
 

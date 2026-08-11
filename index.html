@@ -3,31 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PrettyCool Community</title>
+    <title>PARALLAX</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
       :root {
         color-scheme: dark;
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #06080f;
-        color: #e6edf8;
-        accent-color: #7c5cff;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.16), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.12), transparent 24%),
+          #020402;
+        color: #e5ffee;
       }
 
       * {
         box-sizing: border-box;
       }
 
+      html,
       body {
         margin: 0;
-        min-height: 100vh;
-        background: radial-gradient(circle at top left, rgba(124, 92, 255, 0.22), transparent 28%),
-          radial-gradient(circle at bottom right, rgba(0, 221, 255, 0.12), transparent 24%),
-          #06080f;
+        min-height: 100%;
       }
 
-      img {
-        max-width: 100%;
-        display: block;
+      body {
+        overflow-x: hidden;
       }
 
       a {
@@ -35,76 +35,139 @@
         text-decoration: none;
       }
 
-      .page-wrap {
-        width: min(1120px, calc(100% - 2rem));
-        margin: 0 auto;
-        padding: 2rem 0 4rem;
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        padding: 2rem 1.5rem;
+        background: rgba(0, 0, 0, 0.88);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        transform: translateX(-100%);
+        transition: transform 0.32s ease;
+        z-index: 20;
       }
 
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 3rem;
+      .sidebar.open {
+        transform: translateX(0);
       }
 
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-        font-size: 1.05rem;
+      .sidebar h2 {
+        margin: 0 0 1.5rem;
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.6rem;
+        letter-spacing: 0.08em;
+        color: #7fff7f;
       }
 
-      .brand span {
-        width: 2rem;
-        height: 2rem;
+      .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .menu-list li {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0.95rem 1rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .menu-list li:hover {
+        background: rgba(49, 255, 140, 0.12);
+        border-color: rgba(49, 255, 140, 0.4);
+      }
+
+      .hamburger {
+        position: fixed;
+        left: 1rem;
+        top: 1rem;
+        border: none;
+        background: rgba(0, 0, 0, 0.78);
+        color: #7cff75;
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: 1rem;
         display: grid;
         place-items: center;
-        border-radius: 0.9rem;
-        background: linear-gradient(135deg, #7c5cff 0%, #5ac8fa 100%);
-        color: #0a0e17;
+        z-index: 30;
+        cursor: pointer;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
       }
 
-      nav {
-        display: flex;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        align-items: center;
+      .hamburger:focus-visible {
+        outline: 2px solid #7cff75;
+        outline-offset: 3px;
       }
 
-      nav a {
-        font-size: 0.95rem;
-        color: #a8b5d8;
+      .hamburger div,
+      .hamburger div::before,
+      .hamburger div::after {
+        width: 1.35rem;
+        height: 0.14rem;
+        background: currentColor;
+        border-radius: 999px;
+        position: relative;
       }
 
-      nav a:hover,
-      nav a:focus-visible {
-        color: #ffffff;
+      .hamburger div::before,
+      .hamburger div::after {
+        content: "";
+        position: absolute;
+        left: 0;
+      }
+
+      .hamburger div::before {
+        top: -0.5rem;
+      }
+
+      .hamburger div::after {
+        top: 0.5rem;
+      }
+
+      .page-wrap {
+        margin: 0 auto;
+        padding: 4.5rem 2rem 4rem 2rem;
+        width: min(1180px, calc(100% - 2rem));
+        position: relative;
       }
 
       .hero {
         display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
+        grid-template-columns: 1.1fr 0.9fr;
         gap: 2rem;
         align-items: center;
-        margin-bottom: 3rem;
+        min-height: calc(100vh - 5rem);
+        opacity: 0;
+        transform: translateY(-40px);
+        animation: floatIn 1.1s ease-out forwards;
       }
 
-      .hero-copy h1 {
+      .hero-copy {
+        max-width: 680px;
+      }
+
+      .hero-logo {
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(4rem, 8vw, 7rem);
         margin: 0;
-        font-size: clamp(2.5rem, 5vw, 4.25rem);
-        line-height: 0.95;
-        letter-spacing: -0.05em;
+        line-height: 0.9;
+        letter-spacing: 0.03em;
+        color: #7dff9a;
+        text-shadow: 0 0 30px rgba(125, 255, 154, 0.35);
       }
 
       .hero-copy p {
-        max-width: 42rem;
+        max-width: 38rem;
         font-size: 1.05rem;
-        line-height: 1.9;
-        color: #c4d0e7;
+        line-height: 1.85;
+        color: #d4ffe5;
+        margin: 1.6rem 0 0;
       }
 
       .hero-copy .buttons {
@@ -120,59 +183,72 @@
         align-items: center;
         justify-content: center;
         border-radius: 999px;
-        padding: 0.95rem 1.7rem;
-        font-weight: 600;
+        padding: 1rem 1.8rem;
+        font-weight: 700;
         transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
       }
 
       .button {
-        background: linear-gradient(135deg, #7c5cff 0%, #5ac8fa 100%);
-        color: #050816;
-        box-shadow: 0 20px 60px rgba(124, 92, 255, 0.18);
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        color: #041107;
+        box-shadow: 0 24px 60px rgba(34, 255, 124, 0.24);
       }
 
       .secondary-button {
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        color: #dfe6ff;
-        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(75, 245, 132, 0.32);
+        color: #b9ffd4;
+        background: rgba(17, 30, 16, 0.86);
       }
 
       .button:hover,
       .secondary-button:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
       }
 
       .hero-visual {
-        background: rgba(12, 17, 28, 0.82);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(10, 16, 11, 0.82);
+        border: 1px solid rgba(125, 255, 154, 0.16);
         border-radius: 36px;
-        padding: 2rem;
-        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.24);
+        padding: 2.2rem;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.28);
+      }
+
+      .hero-visual h3 {
+        margin: 0 0 1rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.02em;
+        color: #8effa1;
+      }
+
+      .hero-visual p {
+        margin: 0;
+        color: #b7ffcf;
+        line-height: 1.8;
       }
 
       .card-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1rem;
-        margin-top: 1rem;
+        margin-top: 1.35rem;
       }
 
       .community-card {
-        padding: 1.5rem;
-        border-radius: 28px;
-        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 1.4rem;
+        border-radius: 24px;
+        background: rgba(34, 47, 32, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.16);
       }
 
       .community-card h3 {
-        margin: 0 0 0.85rem;
+        margin: 0 0 0.75rem;
         font-size: 1rem;
-        color: #7c5cff;
+        color: #98ffb7;
       }
 
       .community-card p {
         margin: 0;
-        color: #c7d2ff;
+        color: #d3ffd7;
         line-height: 1.75;
         font-size: 0.95rem;
       }
@@ -183,7 +259,8 @@
 
       .section h2 {
         margin-bottom: 1rem;
-        font-size: 2rem;
+        font-size: clamp(2rem, 4vw, 2.7rem);
+        color: #d4ffda;
       }
 
       .features {
@@ -195,130 +272,172 @@
       .feature-card {
         border-radius: 28px;
         padding: 1.75rem;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(7, 15, 9, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.14);
       }
 
       .feature-card h3 {
         margin-top: 0;
         margin-bottom: 0.75rem;
         font-size: 1.05rem;
+        color: #96ffb0;
       }
 
       .feature-card p {
         margin: 0;
-        color: #bcc9e3;
+        color: #c7ffdc;
       }
 
       footer {
         margin-top: 4rem;
         padding-top: 2rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid rgba(125, 255, 154, 0.12);
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 1rem;
-        color: #8e9ac8;
+        color: #8affc2;
       }
 
       footer small {
-        color: #7e8db7;
+        color: #76ff9f;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 980px) {
         .hero {
           grid-template-columns: 1fr;
+          min-height: auto;
         }
 
         .card-grid,
         .features {
           grid-template-columns: 1fr;
         }
+
+        .page-wrap {
+          padding-left: 2rem;
+        }
+
+        .sidebar {
+          width: 260px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page-wrap {
+          padding: 3.5rem 1.5rem 3rem 1.5rem;
+        }
+
+        .hamburger {
+          left: 0.9rem;
+          top: 0.9rem;
+        }
+
+        .sidebar {
+          width: 100%;
+        }
+      }
+
+      @keyframes floatIn {
+        0% {
+          opacity: 0;
+          transform: translateY(-40px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
   </head>
   <body>
-    <div class="page-wrap">
-      <header>
-        <a class="brand" href="#">
-          <span>PC</span>
-          <div>
-            <strong>PrettyCool</strong>
-            <div style="font-size:0.8rem; color:#8c9aec; letter-spacing:0.02em;">community</div>
-          </div>
-        </a>
-        <nav>
-          <a href="#about">About</a>
-          <a href="#features">Features</a>
-          <a href="#join">Join</a>
-        </nav>
-      </header>
+    <button class="hamburger" aria-label="Open menu" onclick="toggleSidebar()">
+      <div></div>
+    </button>
 
+    <aside class="sidebar" id="sidebar">
+      <h2>MENU</h2>
+      <ul class="menu-list">
+        <li><a href="#community">Community</a></li>
+        <li><a href="#games">Games</a></li>
+        <li><a href="#chat">Chat</a></li>
+        <li><a href="#account">Account</a></li>
+        <li><a href="#feedback">Feedback</a></li>
+      </ul>
+    </aside>
+
+    <div class="page-wrap">
       <section class="hero">
         <div class="hero-copy">
-          <h1>Connect, collaborate, and belong in a sleek dark community space.</h1>
-          <p>PrettyCool Community brings people together with a modern, welcoming hub built for conversation, discovery, and shared growth. Launch your network, spark real connections, and feel at home.</p>
+          <h1 class="hero-logo">PARALLAX</h1>
+          <p>Enter a luminous green and black community hub built for connection, competition, conversation, and feedback. Everything you need is one swipe away in the left sidebar.</p>
           <div class="buttons">
-            <a class="button" href="#join">Get started</a>
-            <a class="secondary-button" href="#features">See features</a>
+            <a class="button" href="#community">Enter community</a>
+            <a class="secondary-button" href="#chat">Open chat</a>
           </div>
         </div>
 
         <div class="hero-visual">
-          <div class="community-card">
-            <h3>Live rooms</h3>
-            <p>Join curated spaces for events, group chats, and deep conversations with people who share your passion.</p>
-          </div>
+          <h3 id="community">Community Pulse</h3>
+          <p>Join active rooms, track live activity, and meet new members with a sleek, game-centric interface.</p>
           <div class="card-grid">
             <div class="community-card">
-              <h3>Profile highlights</h3>
-              <p>Showcase your interests, skills, and community badges in a polished, personal profile.</p>
+              <h3 id="games">Games</h3>
+              <p>Play quick challenges, unlock rewards, and connect through shared competitive moments.</p>
             </div>
             <div class="community-card">
-              <h3>Secure connection</h3>
-              <p>Keep chat and collaboration private with design-first safety and friendly moderation built in.</p>
+              <h3 id="chat">Chat</h3>
+              <p>Open asynchronous conversations with groups, friends, and new collaborators.</p>
             </div>
             <div class="community-card">
-              <h3>Events board</h3>
-              <p>Discover upcoming conversations, workshops, and meetups from community hosts and creators.</p>
+              <h3 id="account">Account</h3>
+              <p>Manage your profile, badges, and preferences in one secure place.</p>
+            </div>
+            <div class="community-card">
+              <h3 id="feedback">Feedback</h3>
+              <p>Share ideas, report improvements, and help shape the space as it grows.</p>
             </div>
           </div>
         </div>
       </section>
 
       <section id="features" class="section">
-        <h2>Designed for people who want to connect.</h2>
+        <h2>Built for rapid access and immersive connection.</h2>
         <div class="features">
           <div class="feature-card">
-            <h3>Fast onboarding</h3>
-            <p>Get started in seconds with a simple profile and instant access to community channels.</p>
+            <h3>Minimal controls</h3>
+            <p>The sidebar keeps everything focused and intuitive so you can move fast without getting lost.</p>
           </div>
           <div class="feature-card">
-            <h3>Bright conversations</h3>
-            <p>Keep discussions lively with topic rooms, pinned updates, and interactive threads.</p>
+            <h3>Dark energy</h3>
+            <p>High-contrast green accents bring a bold cyber atmosphere that still feels friendly and modern.</p>
           </div>
           <div class="feature-card">
-            <h3>Modern style</h3>
-            <p>A polished dark interface that feels premium while staying easy to navigate for every member.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="join" class="section">
-        <div class="hero-copy">
-          <h2>Ready to build something together?</h2>
-          <p>PrettyCool Community is the perfect launch pad for creators, organizers, and friends who want to share ideas, host gatherings, and grow an engaged network.</p>
-          <div class="buttons">
-            <a class="button" href="#">Launch community</a>
-            <a class="secondary-button" href="#">Explore spaces</a>
+            <h3>Float-in arrival</h3>
+            <p>The landing page animates on first load with a subtle downward float effect for a premium first impression.</p>
           </div>
         </div>
       </section>
 
       <footer>
-        <small>Built to host a modern community experience. Deploy static sites quickly with Render.</small>
-        <div>© 2026 PrettyCool</div>
+        <small>Designed for backend-enabled community experiences and smooth deployment to Render.</small>
+        <div>© 2026 PARALLAX</div>
       </footer>
     </div>
+
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const hamburger = document.querySelector(".hamburger");
+
+      function toggleSidebar() {
+        sidebar.classList.toggle("open");
+      }
+
+      document.addEventListener("click", (event) => {
+        if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains("open")) {
+          sidebar.classList.remove("open");
+        }
+      });
+    </script>
   </body>
 </html>

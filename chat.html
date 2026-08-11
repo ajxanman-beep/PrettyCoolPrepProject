@@ -35,6 +35,7 @@
         text-decoration: none;
       }
 
+      /* ---------- sidebar ---------- */
       .sidebar {
         position: fixed;
         left: 0;
@@ -138,6 +139,7 @@
         top: 0.5rem;
       }
 
+      /* ---------- layout ---------- */
       .page-wrap {
         width: min(1180px, calc(100% - 2rem));
         margin: 0 auto;
@@ -163,6 +165,7 @@
         font-size: 2rem;
         letter-spacing: 0.04em;
         color: #7dff9a;
+        text-shadow: 0 0 24px rgba(89, 255, 130, 0.35);
       }
 
       .brand p {
@@ -184,6 +187,31 @@
         cursor: pointer;
       }
 
+      .notify-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 999px;
+        padding: 0.7rem 1.1rem;
+        border: 1px solid rgba(125, 255, 154, 0.28);
+        background: rgba(17, 30, 16, 0.82);
+        color: #b9ffd4;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease;
+      }
+
+      .notify-btn:hover {
+        background: rgba(49, 255, 140, 0.14);
+        transform: translateY(-1px);
+      }
+
+      .notify-btn[data-state="on"] {
+        background: rgba(49, 255, 140, 0.22);
+        border-color: #59ff82;
+      }
+
       .chat-panel {
         display: grid;
         gap: 1.5rem;
@@ -196,14 +224,82 @@
         padding: 1.5rem;
         min-height: 520px;
         box-shadow: 0 40px 120px rgba(0, 0, 0, 0.28);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
       }
 
+      /* ---------- typing indicator ---------- */
+      .typing-row {
+        min-height: 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 0.35rem;
+        color: #87fca0;
+        font-size: 0.86rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .typing-row.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .typing-dots {
+        display: inline-flex;
+        gap: 0.22rem;
+      }
+
+      .typing-dots span {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #7fff9a;
+        animation: typing-bounce 1.1s infinite ease-in-out;
+      }
+
+      .typing-dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .typing-dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes typing-bounce {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.5;
+        }
+        30% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+
+      /* ---------- messages ---------- */
       .messages {
         display: grid;
         gap: 1rem;
         max-height: 420px;
         overflow-y: auto;
         padding-right: 0.25rem;
+        scroll-behavior: smooth;
+      }
+
+      .messages::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .messages::-webkit-scrollbar-thumb {
+        background: rgba(125, 255, 154, 0.25);
+        border-radius: 999px;
       }
 
       .message {
@@ -211,6 +307,23 @@
         border-radius: 22px;
         background: rgba(36, 58, 37, 0.92);
         border: 1px solid rgba(89, 255, 130, 0.16);
+        animation: message-in 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+      }
+
+      .message.own {
+        background: rgba(49, 255, 140, 0.14);
+        border-color: rgba(89, 255, 130, 0.35);
+      }
+
+      @keyframes message-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
       }
 
       .message strong {
@@ -220,7 +333,7 @@
         color: #d9ffdf;
       }
 
-      .message span {
+      .message span.text {
         display: -webkit-box;
         -webkit-line-clamp: 4;
         -webkit-box-orient: vertical;
@@ -231,6 +344,21 @@
         line-height: 1.7;
       }
 
+      .message .attachment {
+        margin-top: 0.6rem;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        max-width: 260px;
+      }
+
+      .message .attachment img,
+      .message .attachment video {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
       .message time {
         display: block;
         margin-top: 0.7rem;
@@ -238,9 +366,67 @@
         color: #87fca0;
       }
 
+      /* ---------- pending attachment preview ---------- */
+      .attach-preview {
+        display: none;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0.8rem;
+        border-radius: 16px;
+        border: 1px solid rgba(125, 255, 154, 0.2);
+        background: rgba(11, 22, 12, 0.92);
+      }
+
+      .attach-preview.visible {
+        display: flex;
+      }
+
+      .attach-preview img,
+      .attach-preview video {
+        width: 52px;
+        height: 52px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      .attach-preview .meta {
+        flex: 1;
+        font-size: 0.85rem;
+        color: #c7ffd9;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+
+      .attach-preview .progress {
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .attach-preview .progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        transition: width 0.2s ease;
+      }
+
+      .attach-preview .remove-attach {
+        border: none;
+        background: rgba(255, 90, 90, 0.14);
+        color: #ffb2b2;
+        border-radius: 999px;
+        width: 1.8rem;
+        height: 1.8rem;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      /* ---------- chat form / toolbar ---------- */
       .chat-form {
         display: grid;
-        gap: 1rem;
+        gap: 0.75rem;
       }
 
       .chat-form textarea {
@@ -253,6 +439,37 @@
         font: inherit;
         resize: vertical;
         min-height: 120px;
+        transition: border-color 0.2s ease;
+      }
+
+      .chat-form textarea:focus {
+        outline: none;
+        border-color: rgba(89, 255, 130, 0.6);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tool-btn {
+        border: 1px solid rgba(125, 255, 154, 0.2);
+        background: rgba(11, 22, 12, 0.92);
+        color: #b9ffd4;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background 0.2s ease, transform 0.15s ease;
+      }
+
+      .tool-btn:hover {
+        background: rgba(49, 255, 140, 0.14);
+        transform: translateY(-1px);
       }
 
       .chat-form-row {
@@ -262,7 +479,7 @@
         gap: 1rem;
       }
 
-      .chat-form button {
+      .chat-form button[type="submit"] {
         border: none;
         border-radius: 999px;
         padding: 1rem 1.4rem;
@@ -270,11 +487,84 @@
         background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
         color: #041107;
         cursor: pointer;
-        transition: transform 0.15s ease;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
       }
 
-      .chat-form button:hover {
+      .chat-form button[type="submit"]:hover {
         transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(49, 255, 140, 0.25);
+      }
+
+      .chat-form button[type="submit"]:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ---------- gif picker ---------- */
+      .gif-picker {
+        display: none;
+        flex-direction: column;
+        gap: 0.6rem;
+        border: 1px solid rgba(125, 255, 154, 0.2);
+        background: rgba(6, 12, 7, 0.96);
+        border-radius: 18px;
+        padding: 0.85rem;
+        max-height: 300px;
+      }
+
+      .gif-picker.visible {
+        display: flex;
+      }
+
+      .gif-picker input {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 0.65rem 0.85rem;
+        font: inherit;
+      }
+
+      .gif-picker input:focus {
+        outline: none;
+        border-color: rgba(89, 255, 130, 0.6);
+      }
+
+      .gif-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        overflow-y: auto;
+        max-height: 220px;
+      }
+
+      .gif-grid button {
+        border: 1px solid transparent;
+        border-radius: 10px;
+        overflow: hidden;
+        padding: 0;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.03);
+        aspect-ratio: 1 / 1;
+      }
+
+      .gif-grid button:hover {
+        border-color: rgba(89, 255, 130, 0.6);
+      }
+
+      .gif-grid img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .gif-empty {
+        font-size: 0.85rem;
+        color: #87fca0;
+        padding: 0.5rem 0.2rem;
       }
 
       .section-title {
@@ -295,9 +585,67 @@
         font-size: 0.95rem;
       }
 
+      /* ---------- toast ---------- */
+      .toast-stack {
+        position: fixed;
+        top: 1.2rem;
+        right: 1.2rem;
+        display: grid;
+        gap: 0.6rem;
+        z-index: 50;
+      }
+
+      .toast {
+        background: rgba(8, 16, 9, 0.95);
+        border: 1px solid rgba(89, 255, 130, 0.35);
+        border-radius: 16px;
+        padding: 0.8rem 1rem;
+        min-width: 220px;
+        max-width: 280px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+        animation: toast-in 0.3s ease both;
+      }
+
+      .toast strong {
+        display: block;
+        color: #9dffb2;
+        font-size: 0.88rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .toast span {
+        color: #c9ffd6;
+        font-size: 0.85rem;
+      }
+
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
       @media (max-width: 900px) {
         .chat-box {
           min-height: 420px;
+        }
+
+        .gif-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .message,
+        .toast {
+          animation: none !important;
+        }
+        .messages {
+          scroll-behavior: auto;
         }
       }
     </style>
@@ -319,29 +667,57 @@
       </ul>
     </aside>
 
+    <div class="toast-stack" id="toastStack"></div>
+
     <div class="page-wrap">
       <div class="topbar">
         <div class="brand">
           <h1>PARALLAX</h1>
           <p>Chat Room</p>
         </div>
+        <button class="notify-btn" id="notifyBtn" onclick="toggleNotifications()">
+          🔔 <span id="notifyLabel">Enable notifications</span>
+        </button>
       </div>
 
       <div class="chat-panel">
         <div>
           <p class="section-title">Live chat</p>
-          <p class="section-description">Send messages to the community and keep conversation simple, calm, and readable.</p>
+          <p class="section-description">Send messages, GIFs, photos, and clips to the community — stay in sync with who's typing.</p>
           <p class="user-note" id="userNote">Loading user…</p>
         </div>
 
         <div class="chat-box">
+          <div class="typing-row" id="typingRow">
+            <span class="typing-dots"><span></span><span></span><span></span></span>
+            <span id="typingText"></span>
+          </div>
+
           <div class="messages" id="messages"></div>
 
           <form class="chat-form" id="chatForm">
-            <textarea id="messageInput" placeholder="Write a message..." required></textarea>
+            <div class="gif-picker" id="gifPicker">
+              <input type="text" id="gifSearch" placeholder="Search Tenor GIFs…" />
+              <div class="gif-grid" id="gifGrid"></div>
+            </div>
+
+            <div class="attach-preview" id="attachPreview">
+              <span class="meta">
+                <span id="attachName">Uploading…</span>
+                <span class="progress"><span class="progress-bar" id="attachProgress"></span></span>
+              </span>
+              <button type="button" class="remove-attach" id="attachRemove" title="Remove attachment">✕</button>
+            </div>
+
+            <textarea id="messageInput" placeholder="Write a message..."></textarea>
+
             <div class="chat-form-row">
-              <div></div>
-              <button type="submit">Send message</button>
+              <div class="toolbar">
+                <button type="button" class="tool-btn" id="gifToggle" title="Send a GIF">GIF</button>
+                <button type="button" class="tool-btn" id="mediaToggle" title="Send a photo or video">📎</button>
+                <input type="file" id="mediaInput" accept="image/*,video/*" hidden />
+              </div>
+              <button type="submit" id="sendBtn">Send message</button>
             </div>
           </form>
         </div>
@@ -349,14 +725,63 @@
     </div>
 
     <script>
+      // ------------------------------------------------------------------
+      // Cloudinary — client-side uploads use the cloud name + an UNSIGNED
+      // upload preset only. The API secret must never live in browser code
+      // (anyone viewing page source could use it to fully manage your
+      // Cloudinary account), so it is intentionally absent here.
+      //
+      // Setup once in the Cloudinary dashboard:
+      //   Settings → Upload → Upload presets → Add upload preset
+      //   Set "Signing Mode" to Unsigned, then paste its name below.
+      // ------------------------------------------------------------------
+      const CLOUDINARY_CLOUD_NAME = "dcbo4oozo";
+      const CLOUDINARY_UPLOAD_PRESET = "REPLACE_WITH_YOUR_UNSIGNED_PRESET";
+      const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+
+      // ------------------------------------------------------------------
+      // Tenor GIF search — get a free API key at https://tenor.com/gifapi
+      // and paste it below. Without a key the GIF picker will show an
+      // error instead of results.
+      // ------------------------------------------------------------------
+      const TENOR_API_KEY = "REPLACE_WITH_YOUR_TENOR_API_KEY";
+      const TENOR_CLIENT_KEY = "parallax_chat";
+
       const messagesEl = document.getElementById("messages");
       const chatForm = document.getElementById("chatForm");
       const messageInput = document.getElementById("messageInput");
       const userNote = document.getElementById("userNote");
       const sidebar = document.getElementById("sidebar");
       const hamburger = document.querySelector(".hamburger");
-      let username = "";
+      const sendBtn = document.getElementById("sendBtn");
 
+      const gifToggle = document.getElementById("gifToggle");
+      const gifPicker = document.getElementById("gifPicker");
+      const gifSearch = document.getElementById("gifSearch");
+      const gifGrid = document.getElementById("gifGrid");
+
+      const mediaToggle = document.getElementById("mediaToggle");
+      const mediaInput = document.getElementById("mediaInput");
+      const attachPreview = document.getElementById("attachPreview");
+      const attachName = document.getElementById("attachName");
+      const attachProgress = document.getElementById("attachProgress");
+      const attachRemove = document.getElementById("attachRemove");
+
+      const typingRow = document.getElementById("typingRow");
+      const typingText = document.getElementById("typingText");
+
+      const notifyBtn = document.getElementById("notifyBtn");
+      const notifyLabel = document.getElementById("notifyLabel");
+      const toastStack = document.getElementById("toastStack");
+
+      let username = "";
+      let pendingAttachment = null; // { type: 'image'|'video'|'gif', url }
+      let knownMessageKeys = new Set();
+      let firstLoad = true;
+      let typingTimeout = null;
+      let gifSearchTimeout = null;
+
+      // ---------------- sidebar ----------------
       function toggleSidebar() {
         sidebar.classList.toggle("open");
       }
@@ -367,6 +792,58 @@
         }
       });
 
+      // ---------------- toasts ----------------
+      function showToast(title, body) {
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.innerHTML = `<strong></strong><span></span>`;
+        toast.querySelector("strong").textContent = title;
+        toast.querySelector("span").textContent = body;
+        toastStack.appendChild(toast);
+        setTimeout(() => toast.remove(), 4500);
+      }
+
+      // ---------------- notifications ----------------
+      function updateNotifyButton() {
+        const enabled = "Notification" in window && Notification.permission === "granted";
+        notifyBtn.dataset.state = enabled ? "on" : "off";
+        notifyLabel.textContent = enabled ? "Notifications on" : "Enable notifications";
+      }
+
+      async function toggleNotifications() {
+        if (!("Notification" in window)) {
+          showToast("Not supported", "Your browser doesn't support notifications.");
+          return;
+        }
+        if (Notification.permission === "granted") {
+          showToast("Notifications", "Notifications are already on for this browser.");
+          return;
+        }
+        const permission = await Notification.requestPermission();
+        updateNotifyButton();
+        if (permission === "granted") {
+          showToast("Notifications on", "You'll be notified about new messages.");
+        }
+      }
+
+      function notifyNewMessage(message) {
+        if (document.hasFocus()) return;
+        if (!("Notification" in window) || Notification.permission !== "granted") return;
+        const body =
+          message.type === "text" || !message.type
+            ? message.message || ""
+            : `sent a ${message.type}`;
+        const n = new Notification(`${message.name} — PARALLAX`, {
+          body: body.slice(0, 120),
+          silent: false,
+        });
+        n.onclick = () => {
+          window.focus();
+          n.close();
+        };
+      }
+
+      // ---------------- user ----------------
       async function loadUser() {
         const res = await fetch("/api/auth/me");
         if (!res.ok) {
@@ -378,6 +855,22 @@
         userNote.textContent = `Signed in as ${username}`;
       }
 
+      // ---------------- messages ----------------
+      function renderAttachment(message) {
+        if (!message.type || message.type === "text") return "";
+        const url = message.attachmentUrl || message.url;
+        if (!url) return "";
+        if (message.type === "video") {
+          return `<div class="attachment"><video src="${url}" controls playsinline></video></div>`;
+        }
+        // image and gif both render as <img>
+        return `<div class="attachment"><img src="${url}" alt="attachment" loading="lazy" /></div>`;
+      }
+
+      function messageKey(message) {
+        return message.id || `${message.name}|${message.timestamp}|${message.message || message.url || ""}`;
+      }
+
       async function loadMessages() {
         const res = await fetch("/api/chat/messages");
         if (!res.ok) {
@@ -385,47 +878,253 @@
           return;
         }
         const data = await res.json();
+        const wasAtBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 20;
+
+        const newKeys = new Set();
         messagesEl.innerHTML = "";
+
         data.messages.forEach((message) => {
+          const key = messageKey(message);
+          newKeys.add(key);
+          const isNew = !firstLoad && !knownMessageKeys.has(key);
+
           const messageEl = document.createElement("div");
-          messageEl.className = "message";
+          messageEl.className = "message" + (message.name === username ? " own" : "");
+          if (!isNew) {
+            // avoid re-triggering entrance animation for already-seen messages
+            messageEl.style.animation = "none";
+          }
 
           const author = document.createElement("strong");
           author.textContent = message.name;
 
           const text = document.createElement("span");
-          text.textContent = message.message;
-          text.title = message.message;
+          text.className = "text";
+          text.textContent = message.message || "";
+          text.title = message.message || "";
 
           const time = document.createElement("time");
           time.textContent = new Date(message.timestamp).toLocaleString();
 
           messageEl.appendChild(author);
-          messageEl.appendChild(text);
+          if (message.message) messageEl.appendChild(text);
+          messageEl.insertAdjacentHTML("beforeend", renderAttachment(message));
           messageEl.appendChild(time);
           messagesEl.appendChild(messageEl);
+
+          if (isNew && message.name !== username) {
+            notifyNewMessage(message);
+          }
         });
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        knownMessageKeys = newKeys;
+        firstLoad = false;
+
+        if (wasAtBottom) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
       }
 
-      async function sendMessage(event) {
-        event.preventDefault();
-        const message = messageInput.value.trim();
-        if (!message) return;
+      // ---------------- typing indicator ----------------
+      // Assumes backend endpoints:
+      //   POST /api/chat/typing   { typing: true|false }
+      //   GET  /api/chat/typing   -> { typers: ["alice", "bob"] }
+      async function pollTyping() {
+        try {
+          const res = await fetch("/api/chat/typing");
+          if (!res.ok) return;
+          const data = await res.json();
+          const others = (data.typers || []).filter((name) => name !== username);
+          if (others.length === 0) {
+            typingRow.classList.remove("visible");
+            typingText.textContent = "";
+            return;
+          }
+          const label =
+            others.length === 1
+              ? `${others[0]} is typing`
+              : others.length === 2
+              ? `${others[0]} and ${others[1]} are typing`
+              : `${others.length} people are typing`;
+          typingText.textContent = label;
+          typingRow.classList.add("visible");
+        } catch (err) {
+          // silently ignore — typing indicator is a non-critical feature
+        }
+      }
 
-        const res = await fetch("/api/chat/messages", {
+      function notifyTypingState(isTyping) {
+        fetch("/api/chat/typing", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message })
-        });
+          body: JSON.stringify({ typing: isTyping }),
+        }).catch(() => {});
+      }
 
-        if (!res.ok) {
-          window.location.href = "/auth";
+      messageInput.addEventListener("input", () => {
+        notifyTypingState(true);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => notifyTypingState(false), 2000);
+      });
+
+      // ---------------- GIF picker (Tenor) ----------------
+      function toggleGifPicker(forceOpen) {
+        const open = forceOpen ?? !gifPicker.classList.contains("visible");
+        gifPicker.classList.toggle("visible", open);
+        if (open) {
+          gifSearch.focus();
+          if (!gifGrid.childElementCount) searchGifs("trending");
+        }
+      }
+
+      gifToggle.addEventListener("click", () => toggleGifPicker());
+
+      async function searchGifs(query) {
+        gifGrid.innerHTML = `<div class="gif-empty">Searching…</div>`;
+        if (!TENOR_API_KEY || TENOR_API_KEY.startsWith("REPLACE_")) {
+          gifGrid.innerHTML = `<div class="gif-empty">Add your Tenor API key in the script to enable GIF search.</div>`;
+          return;
+        }
+        const endpoint =
+          query === "trending"
+            ? `https://tenor.googleapis.com/v2/featured?key=${TENOR_API_KEY}&client_key=${TENOR_CLIENT_KEY}&limit=18`
+            : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${TENOR_API_KEY}&client_key=${TENOR_CLIENT_KEY}&limit=18`;
+        try {
+          const res = await fetch(endpoint);
+          const data = await res.json();
+          gifGrid.innerHTML = "";
+          if (!data.results || data.results.length === 0) {
+            gifGrid.innerHTML = `<div class="gif-empty">No GIFs found.</div>`;
+            return;
+          }
+          data.results.forEach((gif) => {
+            const previewUrl = gif.media_formats?.tinygif?.url || gif.media_formats?.gif?.url;
+            const fullUrl = gif.media_formats?.gif?.url || previewUrl;
+            if (!previewUrl) return;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.innerHTML = `<img src="${previewUrl}" alt="${gif.content_description || "GIF"}" loading="lazy" />`;
+            btn.addEventListener("click", () => selectGif(fullUrl));
+            gifGrid.appendChild(btn);
+          });
+        } catch (err) {
+          gifGrid.innerHTML = `<div class="gif-empty">Couldn't reach Tenor. Try again later.</div>`;
+        }
+      }
+
+      gifSearch.addEventListener("input", () => {
+        clearTimeout(gifSearchTimeout);
+        const query = gifSearch.value.trim();
+        gifSearchTimeout = setTimeout(() => searchGifs(query || "trending"), 350);
+      });
+
+      function selectGif(url) {
+        setAttachment({ type: "gif", url, label: "GIF selected" });
+        toggleGifPicker(false);
+      }
+
+      // ---------------- image / video upload ----------------
+      mediaToggle.addEventListener("click", () => mediaInput.click());
+
+      mediaInput.addEventListener("change", async () => {
+        const file = mediaInput.files[0];
+        if (!file) return;
+        await uploadToCloudinary(file);
+        mediaInput.value = "";
+      });
+
+      function setAttachment(attachment) {
+        pendingAttachment = attachment;
+        attachPreview.classList.add("visible");
+        attachName.textContent = attachment.label || attachment.url;
+        attachProgress.style.width = "100%";
+      }
+
+      attachRemove.addEventListener("click", () => {
+        pendingAttachment = null;
+        attachPreview.classList.remove("visible");
+        attachProgress.style.width = "0%";
+      });
+
+      async function uploadToCloudinary(file) {
+        if (CLOUDINARY_UPLOAD_PRESET.startsWith("REPLACE_")) {
+          showToast("Setup needed", "Add an unsigned Cloudinary upload preset in the script first.");
           return;
         }
 
-        messageInput.value = "";
-        await loadMessages();
+        attachPreview.classList.add("visible");
+        attachName.textContent = `Uploading ${file.name}…`;
+        attachProgress.style.width = "10%";
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        try {
+          const result = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", CLOUDINARY_UPLOAD_URL);
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable) {
+                const pct = Math.round((event.loaded / event.total) * 100);
+                attachProgress.style.width = `${pct}%`;
+              }
+            };
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(JSON.parse(xhr.responseText));
+              } else {
+                reject(new Error("Upload failed"));
+              }
+            };
+            xhr.onerror = () => reject(new Error("Upload failed"));
+            xhr.send(formData);
+          });
+
+          const type = result.resource_type === "video" ? "video" : "image";
+          setAttachment({ type, url: result.secure_url, label: file.name });
+        } catch (err) {
+          attachPreview.classList.remove("visible");
+          showToast("Upload failed", "Couldn't upload that file. Please try again.");
+        }
+      }
+
+      // ---------------- send message ----------------
+      async function sendMessage(event) {
+        event.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message && !pendingAttachment) return;
+
+        sendBtn.disabled = true;
+        clearTimeout(typingTimeout);
+        notifyTypingState(false);
+
+        const payload = { message };
+        if (pendingAttachment) {
+          payload.type = pendingAttachment.type;
+          payload.attachmentUrl = pendingAttachment.url;
+        }
+
+        try {
+          const res = await fetch("/api/chat/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) {
+            window.location.href = "/auth";
+            return;
+          }
+
+          messageInput.value = "";
+          pendingAttachment = null;
+          attachPreview.classList.remove("visible");
+          attachProgress.style.width = "0%";
+          await loadMessages();
+        } finally {
+          sendBtn.disabled = false;
+        }
       }
 
       async function logout() {
@@ -434,8 +1133,17 @@
       }
 
       chatForm.addEventListener("submit", sendMessage);
+      messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage(event);
+        }
+      });
+
+      updateNotifyButton();
       loadUser().then(loadMessages);
       setInterval(loadMessages, 5000);
+      setInterval(pollTyping, 2000);
     </script>
   </body>
 </html>

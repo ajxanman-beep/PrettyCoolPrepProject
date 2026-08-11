@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PARALLAX Chat</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.16), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.12), transparent 24%),
+          #020402;
+        color: #e5ffee;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page-wrap {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4.5rem 2rem 4rem 2rem;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: 2rem;
+        letter-spacing: 0.04em;
+        color: #7dff9a;
+      }
+
+      .brand p {
+        margin: 0;
+        color: #c7ffd9;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.95rem 1.4rem;
+        border: 1px solid rgba(125, 255, 154, 0.28);
+        background: rgba(17, 30, 16, 0.82);
+        color: #b9ffd4;
+        font-weight: 600;
+      }
+
+      .chat-panel {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .chat-box {
+        background: rgba(10, 16, 11, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.16);
+        border-radius: 32px;
+        padding: 1.5rem;
+        min-height: 520px;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.28);
+      }
+
+      .messages {
+        display: grid;
+        gap: 1rem;
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+      }
+
+      .message {
+        padding: 1rem 1.15rem;
+        border-radius: 22px;
+        background: rgba(36, 58, 37, 0.92);
+        border: 1px solid rgba(89, 255, 130, 0.16);
+      }
+
+      .message strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.95rem;
+        color: #d9ffdf;
+      }
+
+      .message span {
+        display: block;
+        color: #c6ffd4;
+        line-height: 1.7;
+      }
+
+      .message time {
+        display: block;
+        margin-top: 0.7rem;
+        font-size: 0.82rem;
+        color: #87fca0;
+      }
+
+      .chat-form {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .chat-form-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+      }
+
+      .chat-form input,
+      .chat-form textarea {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+        font: inherit;
+      }
+
+      .chat-form textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+
+      .chat-form button {
+        border: none;
+        border-radius: 999px;
+        padding: 1rem 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        color: #041107;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+
+      .chat-form button:hover {
+        transform: translateY(-1px);
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3rem);
+        color: #d4ffda;
+      }
+
+      .section-description {
+        margin: 0.6rem 0 0;
+        color: #c7ffd7;
+        max-width: 42rem;
+      }
+
+      @media (max-width: 900px) {
+        .chat-box {
+          min-height: 420px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>PARALLAX</h1>
+          <p>Chat Room</p>
+        </div>
+        <a class="button" href="/">Back to home</a>
+      </div>
+
+      <div class="chat-panel">
+        <div>
+          <p class="section-title">Live chat</p>
+          <p class="section-description">Send messages to the community and view the latest conversation in a calm, easy-to-read feed.</p>
+        </div>
+
+        <div class="chat-box">
+          <div class="messages" id="messages"></div>
+
+          <form class="chat-form" id="chatForm">
+            <input type="text" id="nameInput" placeholder="Your name" autocomplete="off" required />
+            <textarea id="messageInput" placeholder="Write a message..." required></textarea>
+            <div class="chat-form-row">
+              <div></div>
+              <button type="submit">Send message</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const messagesEl = document.getElementById("messages");
+      const chatForm = document.getElementById("chatForm");
+      const nameInput = document.getElementById("nameInput");
+      const messageInput = document.getElementById("messageInput");
+
+      async function loadMessages() {
+        const res = await fetch("/api/chat/messages");
+        const data = await res.json();
+        messagesEl.innerHTML = "";
+        data.messages.forEach((message) => {
+          const messageEl = document.createElement("div");
+          messageEl.className = "message";
+          messageEl.innerHTML = `
+            <strong>${message.name}</strong>
+            <span>${message.message}</span>
+            <time>${new Date(message.timestamp).toLocaleString()}</time>
+          `;
+          messagesEl.appendChild(messageEl);
+        });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      async function sendMessage(event) {
+        event.preventDefault();
+        const name = nameInput.value.trim();
+        const message = messageInput.value.trim();
+        if (!name || !message) return;
+
+        await fetch("/api/chat/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, message })
+        });
+
+        messageInput.value = "";
+        loadMessages();
+      }
+
+      chatForm.addEventListener("submit", sendMessage);
+      loadMessages();
+      setInterval(loadMessages, 5000);
+    </script>
+  </body>
+</html>

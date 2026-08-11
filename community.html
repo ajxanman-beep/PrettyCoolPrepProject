@@ -450,6 +450,8 @@
         <li><a href="/">Home</a></li>
         <li><a href="/chat">Chat</a></li>
         <li><a href="/community">Community</a></li>
+        <li><a href="/videos">Video Feed</a></li>
+        <li><a href="/upload">Upload</a></li>
         <li><a href="/auth">Account</a></li>
         <li><a class="logout-button" href="/logout">Logout</a></li>
       </ul>
@@ -459,113 +461,24 @@
       <div class="topbar">
         <div class="brand">
           <h1>PARALLAX</h1>
-          <p>Community hub: forums, games, and video feed.</p>
+          <p>Community hub: forums and games with a dedicated video feed page.</p>
         </div>
         <div class="top-actions">
           <span class="status-pill" id="userNote">Loading community…</span>
-          <button class="create-button" id="openCreate">Create</button>
+          <a class="create-button" href="/upload">Upload</a>
+          <a class="create-button" href="/videos">Video Feed</a>
         </div>
       </div>
 
       <section class="panel-hero">
         <h2>Community</h2>
-        <p>Browse forum posts, player-made games, and shared videos. Use the tabs to switch sections and create content with a single click.</p>
+        <p>Browse forum posts and games here. Use the upload page to publish new content and the video feed page to search and watch videos.</p>
       </section>
 
       <div class="tab-bar" role="tablist">
         <button class="tab-button active" data-tab="forum" type="button">Forums</button>
         <button class="tab-button" data-tab="games" type="button">Games</button>
-        <button class="tab-button" data-tab="videos" type="button">Videos</button>
       </div>
-
-      <section class="create-panel" id="createPanel">
-        <div class="content-panel">
-          <h3>Create new content</h3>
-          <div class="tab-bar" role="tablist">
-            <button class="tab-button active" data-create="post" type="button">Post</button>
-            <button class="tab-button" data-create="game" type="button">Game</button>
-            <button class="tab-button" data-create="video" type="button">Video</button>
-          </div>
-          <div class="tab-content active" data-content="post">
-            <form class="post-form" id="forumForm">
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="postTitle">Title</label>
-                  <input id="postTitle" name="title" placeholder="Post title" required />
-                </div>
-                <div class="input-group">
-                  <label for="postBody">Message</label>
-                  <textarea id="postBody" name="body" placeholder="Write your post here..." required></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="attachmentUrl">Attachment URL</label>
-                  <input id="attachmentUrl" name="attachmentUrl" placeholder="Image, GIF, video, or file link" />
-                </div>
-                <div class="input-group">
-                  <label for="attachmentType">Attachment Type</label>
-                  <select id="attachmentType" name="attachmentType">
-                    <option value="image">Image</option>
-                    <option value="gif">GIF</option>
-                    <option value="video">Video</option>
-                    <option value="link">Link</option>
-                  </select>
-                </div>
-                <div class="input-group">
-                  <label for="postLink">Optional Link</label>
-                  <input id="postLink" name="linkUrl" placeholder="Optional link to a resource" />
-                </div>
-                <div class="input-group">
-                  <label for="attachmentFile">Attachment file</label>
-                  <input id="attachmentFile" name="attachmentFile" type="file" accept="image/*,video/*" />
-                </div>
-                <button class="primary-button" type="submit">Create post</button>
-              </div>
-            </form>
-          </div>
-          <div class="tab-content" data-content="game">
-            <form class="game-form" id="gameForm">
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="gameTitle">Game Title</label>
-                  <input id="gameTitle" name="title" placeholder="Game name" required />
-                </div>
-                <div class="input-group">
-                  <label for="gameDescription">Description</label>
-                  <textarea id="gameDescription" name="description" placeholder="What makes your game fun?" required></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="gameUrl">Game URL</label>
-                  <input id="gameUrl" name="gameUrl" placeholder="https://.../index.html" required />
-                </div>
-                <button class="primary-button" type="submit">Upload game</button>
-              </div>
-            </form>
-          </div>
-          <div class="tab-content" data-content="video">
-            <form class="video-form" id="videoForm">
-              <div class="form-row">
-                <div class="input-group">
-                  <label for="videoTitle">Video Title</label>
-                  <input id="videoTitle" name="title" placeholder="Video title" required />
-                </div>
-                <div class="input-group">
-                  <label for="videoDescription">Description</label>
-                  <textarea id="videoDescription" name="description" placeholder="Describe your post" required></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="videoUrl">Video URL</label>
-                  <input id="videoUrl" name="videoUrl" placeholder="Video link or embed URL" />
-                </div>
-                <div class="input-group">
-                  <label for="videoFile">Video file</label>
-                  <input id="videoFile" name="videoFile" type="file" accept="video/*" />
-                </div>
-                <button class="primary-button" type="submit">Post video</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
 
       <section class="section">
         <div class="content-panel tab-content active" id="forumTab">
@@ -578,11 +491,6 @@
           <p>Explore playable index.html games shared by creators.</p>
           <div id="gamesList" class="card-grid"></div>
         </div>
-        <div class="content-panel tab-content" id="videosTab">
-          <h3>Video Feed</h3>
-          <p>Watch community videos and leave reactions or comments.</p>
-          <div id="videosList" class="card-grid"></div>
-        </div>
       </section>
     </div>
 
@@ -592,16 +500,8 @@
       const userNote = document.getElementById("userNote");
       const postsList = document.getElementById("postsList");
       const gamesList = document.getElementById("gamesList");
-      const videosList = document.getElementById("videosList");
-      const forumForm = document.getElementById("forumForm");
-      const gameForm = document.getElementById("gameForm");
-      const videoForm = document.getElementById("videoForm");
-      const attachmentFileInput = document.getElementById("attachmentFile");
-      const videoFileInput = document.getElementById("videoFile");
-      const openCreate = document.getElementById("openCreate");
-      const createPanel = document.getElementById("createPanel");
-      const mainTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")].filter((btn) => btn.dataset.tab);
-      const createTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")].filter((btn) => btn.dataset.create);
+      const forumForm = null;
+      const gameForm = null;
       let signedIn = false;
       let username = "Guest";
 
@@ -750,46 +650,6 @@
           .join("");
       };
 
-      const renderVideos = (videos) => {
-        if (!videos.length) {
-          videosList.innerHTML = `<div class="panel"><p>No video posts yet. Share a new clip.</p></div>`;
-          return;
-        }
-
-        videosList.innerHTML = videos
-          .map(
-            (video) => `
-            <article class="video-card" data-video-id="${video.id}">
-              <h3>${video.title}</h3>
-              <p>${video.description}</p>
-              <div class="video-meta">Posted by ${video.author} · ${getRelativeTime(video.timestamp)}</div>
-              <div class="attachment-preview"><video controls src="${video.videoUrl}"></video></div>
-              <div class="video-actions">
-                <div class="reaction-pill video-like" data-video-id="${video.id}">❤️ ${video.likes}</div>
-                <div class="reaction-pill video-share" data-video-id="${video.id}">🔁 ${video.shares}</div>
-              </div>
-              <div class="comment-row">
-                <input type="text" class="comment-input" data-video-id="${video.id}" placeholder="Write a comment..." />
-                <button class="comment-button video-comment" data-video-id="${video.id}">Comment</button>
-              </div>
-              <div class="comments">
-                ${video.comments
-                  .map(
-                    (comment) => `
-                    <div class="comment-card">
-                      <strong>${comment.author}</strong>
-                      <p>${comment.text}</p>
-                    </div>
-                  `
-                  )
-                  .join("")}
-              </div>
-            </article>
-          `
-          )
-          .join("");
-      };
-
       const loadPosts = async () => {
         const data = await api("/api/community/posts");
         renderPosts(data.posts);
@@ -800,13 +660,8 @@
         renderGames(data.games);
       };
 
-      const loadVideos = async () => {
-        const data = await api("/api/community/videos");
-        renderVideos(data.videos);
-      };
-
       const refreshCommunity = async () => {
-        await Promise.all([loadPosts(), loadGames(), loadVideos()]);
+        await Promise.all([loadPosts(), loadGames()]);
       };
 
       const setTab = (tab) => {
@@ -819,110 +674,8 @@
         });
       };
 
-      const setCreateTab = (createType) => {
-        createTabButtons.forEach((button) => {
-          button.classList.toggle("active", button.dataset.create === createType);
-        });
-        document.querySelectorAll(".create-panel .tab-content").forEach((content) => {
-          content.classList.toggle("active", content.dataset.content === createType);
-        });
-      };
-
-      openCreate.addEventListener("click", () => {
-        createPanel.classList.toggle("active");
-      });
-
       mainTabButtons.forEach((button) => {
         button.addEventListener("click", () => setTab(button.dataset.tab));
-      });
-
-      createTabButtons.forEach((button) => {
-        button.addEventListener("click", () => setCreateTab(button.dataset.create));
-      });
-
-      forumForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (!signedIn) {
-          alert("Sign in to create a community post.");
-          return;
-        }
-
-        let attachmentUrl = document.getElementById("attachmentUrl").value.trim();
-        const attachmentFile = attachmentFileInput.files[0];
-        if (attachmentFile) {
-          attachmentUrl = await uploadFileToCloudinary(attachmentFile);
-        }
-
-        await api("/api/community/posts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: document.getElementById("postTitle").value.trim(),
-            body: document.getElementById("postBody").value.trim(),
-            attachmentUrl,
-            attachmentType: document.getElementById("attachmentType").value,
-            linkUrl: document.getElementById("postLink").value.trim()
-          })
-        });
-
-        document.getElementById("postTitle").value = "";
-        document.getElementById("postBody").value = "";
-        document.getElementById("attachmentUrl").value = "";
-        document.getElementById("postLink").value = "";
-        attachmentFileInput.value = "";
-        await loadPosts();
-      });
-
-      gameForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (!signedIn) {
-          alert("Sign in to upload a game.");
-          return;
-        }
-        await api("/api/community/games", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: document.getElementById("gameTitle").value.trim(),
-            description: document.getElementById("gameDescription").value.trim(),
-            gameUrl: document.getElementById("gameUrl").value.trim()
-          })
-        });
-
-        document.getElementById("gameTitle").value = "";
-        document.getElementById("gameDescription").value = "";
-        document.getElementById("gameUrl").value = "";
-        await loadGames();
-      });
-
-      videoForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (!signedIn) {
-          alert("Sign in to share a video.");
-          return;
-        }
-
-        let videoUrl = document.getElementById("videoUrl").value.trim();
-        const videoFile = videoFileInput.files[0];
-        if (videoFile) {
-          videoUrl = await uploadFileToCloudinary(videoFile);
-        }
-
-        await api("/api/community/videos", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: document.getElementById("videoTitle").value.trim(),
-            description: document.getElementById("videoDescription").value.trim(),
-            videoUrl
-          })
-        });
-
-        document.getElementById("videoTitle").value = "";
-        document.getElementById("videoDescription").value = "";
-        document.getElementById("videoUrl").value = "";
-        videoFileInput.value = "";
-        await loadVideos();
       });
 
       postsList.addEventListener("click", async (event) => {
@@ -951,44 +704,6 @@
           });
           if (input) input.value = "";
           await loadPosts();
-        }
-      });
-
-      videosList.addEventListener("click", async (event) => {
-        const videoId = event.target.dataset.videoId;
-        if (!videoId) return;
-
-        if (event.target.classList.contains("video-like")) {
-          await api(`/api/community/videos/${videoId}/react`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reaction: "like" })
-          });
-          await loadVideos();
-          return;
-        }
-
-        if (event.target.classList.contains("video-share")) {
-          await api(`/api/community/videos/${videoId}/react`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reaction: "share" })
-          });
-          await loadVideos();
-          return;
-        }
-
-        if (event.target.classList.contains("video-comment")) {
-          const input = document.querySelector(`.comment-input[data-video-id='${videoId}']`);
-          const text = input?.value.trim();
-          if (!text) return;
-          await api(`/api/community/videos/${videoId}/comment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ comment: text })
-          });
-          if (input) input.value = "";
-          await loadVideos();
         }
       });
 

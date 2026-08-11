@@ -96,6 +96,22 @@ app.get("/community", (req, res) => {
   res.sendFile(path.join(__dirname, "community.html"));
 });
 
+app.get("/upload", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.redirect(`/auth?redirect=${encodeURIComponent(req.originalUrl)}`);
+  }
+  res.sendFile(path.join(__dirname, "upload.html"));
+});
+
+app.get("/videos", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.redirect(`/auth?redirect=${encodeURIComponent(req.originalUrl)}`);
+  }
+  res.sendFile(path.join(__dirname, "videos.html"));
+});
+
 app.get("/auth", (req, res) => {
   const session = getSession(req);
   if (session) {

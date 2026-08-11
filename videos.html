@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PARALLAX Video Feed</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.14), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.1), transparent 24%),
+          #020402;
+        color: #e5ffee;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        padding: 2rem 1.5rem;
+        background: rgba(0, 0, 0, 0.88);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        transform: translateX(-100%);
+        transition: transform 0.32s ease;
+        z-index: 20;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar h2 {
+        margin: 0 0 1.5rem;
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.6rem;
+        letter-spacing: 0.08em;
+        color: #7fff7f;
+      }
+
+      .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .menu-list li {
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .menu-list li a {
+        display: block;
+        width: 100%;
+        padding: 0.95rem 1rem;
+        color: inherit;
+        border-radius: inherit;
+      }
+
+      .menu-list li:hover {
+        background: rgba(49, 255, 140, 0.12);
+        border-color: rgba(49, 255, 140, 0.4);
+      }
+
+      .hamburger {
+        position: fixed;
+        left: 1rem;
+        top: 1rem;
+        border: none;
+        background: rgba(0, 0, 0, 0.78);
+        color: #7cff75;
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: 1rem;
+        display: grid;
+        place-items: center;
+        z-index: 30;
+        cursor: pointer;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      }
+
+      .hamburger div,
+      .hamburger div::before,
+      .hamburger div::after {
+        width: 1.35rem;
+        height: 0.14rem;
+        background: currentColor;
+        border-radius: 999px;
+        position: relative;
+      }
+
+      .hamburger div::before,
+      .hamburger div::after {
+        content: "";
+        position: absolute;
+        left: 0;
+      }
+
+      .hamburger div::before {
+        top: -0.5rem;
+      }
+
+      .hamburger div::after {
+        top: 0.5rem;
+      }
+
+      .page-wrap {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4.5rem 2rem 4rem 2rem;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: clamp(2.5rem, 3.5vw, 3.2rem);
+        letter-spacing: 0.04em;
+        color: #7dff9a;
+      }
+
+      .brand p {
+        margin: 0.35rem 0 0;
+        color: #c7ffd9;
+      }
+
+      .search-bar {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .search-bar input {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+        font: inherit;
+      }
+
+      .video-grid {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      .video-card {
+        border-radius: 28px;
+        padding: 1.5rem;
+        background: rgba(7, 15, 9, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.14);
+      }
+
+      .video-card h3 {
+        margin-top: 0;
+        color: #96ffb0;
+      }
+
+      .video-card p {
+        margin: 0.75rem 0;
+        color: #c7ffdc;
+        line-height: 1.7;
+      }
+
+      .video-meta {
+        color: #9effb8;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+      }
+
+      .watch-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.95rem 1.3rem;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        color: #041107;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+      }
+
+      .video-player {
+        width: 100%;
+        max-height: 520px;
+        border-radius: 24px;
+        background: rgba(11, 22, 12, 0.95);
+        overflow: hidden;
+      }
+
+      .video-player video {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .video-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .video-header h2,
+      .video-header p {
+        margin: 0;
+      }
+
+      .video-grid small {
+        color: #8effc8;
+      }
+
+      .comment-row,
+      .video-actions {
+        display: flex;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+
+      .comment-button,
+      .reaction-pill {
+        border: none;
+        border-radius: 999px;
+        padding: 0.85rem 1.1rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: #c7ffd7;
+        cursor: pointer;
+      }
+
+      .comment-input {
+        flex: 1;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+      }
+
+      .panel {
+        background: rgba(10, 16, 11, 0.94);
+        border: 1px solid rgba(125, 255, 154, 0.16);
+        border-radius: 32px;
+        padding: 1.75rem;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.18);
+      }
+
+      @media (max-width: 900px) {
+        .page-wrap {
+          padding: 3rem 1.5rem 3rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="hamburger" aria-label="Open menu" onclick="toggleSidebar()">
+      <div></div>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+      <h2>MENU</h2>
+      <ul class="menu-list">
+        <li><a href="/">Home</a></li>
+        <li><a href="/chat">Chat</a></li>
+        <li><a href="/community">Community</a></li>
+        <li><a href="/videos">Video Feed</a></li>
+        <li><a href="/upload">Upload</a></li>
+        <li><a href="/auth">Account</a></li>
+        <li><a class="logout-button" href="/logout">Logout</a></li>
+      </ul>
+    </aside>
+
+    <div class="page-wrap">
+      <div class="topbar">
+        <div class="brand">
+          <h1>PARALLAX Video Feed</h1>
+          <p>Search, browse, and watch community videos in a dedicated experience.</p>
+        </div>
+        <div class="search-bar">
+          <input id="searchInput" placeholder="Search videos or creators..." />
+        </div>
+      </div>
+
+      <section class="panel video-header">
+        <h2>Video feed</h2>
+        <p>Use the search box to find content by title or author. Click any video card to watch it directly in the page.</p>
+      </section>
+
+      <section id="videoList" class="video-grid"></section>
+
+      <section id="playerSection" class="video-player" style="display:none; margin-top:1.25rem;">
+        <video id="activeVideo" controls></video>
+      </section>
+    </div>
+
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const hamburger = document.querySelector(".hamburger");
+      const searchInput = document.getElementById("searchInput");
+      const videoList = document.getElementById("videoList");
+      const playerSection = document.getElementById("playerSection");
+      const activeVideo = document.getElementById("activeVideo");
+
+      function toggleSidebar() {
+        sidebar.classList.toggle("open");
+      }
+
+      document.addEventListener("click", (event) => {
+        if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains("open")) {
+          sidebar.classList.remove("open");
+        }
+      });
+
+      const api = async (url, options = {}) => {
+        const res = await fetch(url, options);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw data;
+        return data;
+      };
+
+      const getRelativeTime = (timestamp) => {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 1) return "just now";
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
+      };
+
+      const renderVideoList = (videos) => {
+        if (!videos.length) {
+          videoList.innerHTML = `<div class="panel"><p>No videos yet. Share your own from the upload page.</p></div>`;
+          return;
+        }
+
+        videoList.innerHTML = videos
+          .map(
+            (video) => `
+              <article class="video-card" data-id="${video.id}" data-url="${video.videoUrl}" data-title="${video.title}" data-author="${video.author}">
+                <h3>${video.title}</h3>
+                <p>${video.description}</p>
+                <div class="video-meta">Posted by ${video.author} · ${getRelativeTime(video.timestamp)}</div>
+                <small>Tap to watch</small>
+              </article>
+            `
+          )
+          .join("");
+      };
+
+      const loadVideos = async () => {
+        const data = await api("/api/community/videos");
+        return data.videos;
+      };
+
+      const refreshFeed = async () => {
+        const videos = await loadVideos();
+        renderVideoList(videos);
+      };
+
+      const filterVideos = (videos, query) => {
+        if (!query) return videos;
+        const lower = query.toLowerCase();
+        return videos.filter((video) => video.title.toLowerCase().includes(lower) || video.author.toLowerCase().includes(lower));
+      };
+
+      searchInput.addEventListener("input", async () => {
+        const allVideos = await loadVideos();
+        const filtered = filterVideos(allVideos, searchInput.value.trim());
+        renderVideoList(filtered);
+      });
+
+      videoList.addEventListener("click", (event) => {
+        const card = event.target.closest(".video-card");
+        if (!card) return;
+        const selectedUrl = card.dataset.url;
+        activeVideo.src = selectedUrl;
+        activeVideo.play();
+        playerSection.style.display = "block";
+        playerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      refreshFeed();
+    </script>
+  </body>
+</html>

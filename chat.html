@@ -4,36 +4,296 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PARALLAX Chat</title>
-    <link rel="stylesheet" href="/styles.css" />
     <style>
-      .chat-panel {
-        display: grid;
-        gap: 1.3rem;
-        min-height: calc(100vh - 9rem);
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.16), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.12), transparent 24%), #020402;
+        color: #e5ffee;
       }
 
-      .chat-box {
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font-family: inherit;
+      }
+
+      /* ---------- sidebar ---------- */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        padding: 2rem 1.5rem;
+        background: rgba(0, 0, 0, 0.9);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        transform: translateX(-100%);
+        transition: transform 0.32s ease;
+        z-index: 60;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 55;
+      }
+
+      .sidebar-backdrop.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sidebar h2 {
+        margin: 0 0 1.5rem;
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.6rem;
+        letter-spacing: 0.08em;
+        color: #7fff7f;
+      }
+
+      .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .menu-list li {
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        transition: background 0.2s ease, border-color 0.2s ease;
+      }
+
+      .menu-list li a {
+        display: block;
+        width: 100%;
+        min-height: 100%;
+        padding: 0.95rem 1rem;
+        border-radius: inherit;
+        color: inherit;
+      }
+
+      .menu-list li:hover {
+        background: rgba(49, 255, 140, 0.12);
+        border-color: rgba(49, 255, 140, 0.4);
+      }
+
+      .hamburger {
+        position: fixed;
+        left: 1rem;
+        top: 1rem;
+        border: none;
+        background: rgba(0, 0, 0, 0.78);
+        color: #7cff75;
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: 1rem;
+        display: grid;
+        place-items: center;
+        z-index: 65;
+        cursor: pointer;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      }
+
+      .hamburger:focus-visible {
+        outline: 2px solid #7cff75;
+        outline-offset: 3px;
+      }
+
+      .hamburger div,
+      .hamburger div::before,
+      .hamburger div::after {
+        width: 1.35rem;
+        height: 0.14rem;
+        background: currentColor;
+        border-radius: 999px;
+        position: relative;
+      }
+
+      .hamburger div::before,
+      .hamburger div::after {
+        content: "";
+        position: absolute;
+        left: 0;
+      }
+
+      .hamburger div::before {
+        top: -0.5rem;
+      }
+
+      .hamburger div::after {
+        top: 0.5rem;
+      }
+
+      /* ---------- layout ---------- */
+      .page-wrap {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4.5rem 2rem 4rem 2rem;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .brand {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        min-height: min(720px, calc(100vh - 18rem));
       }
 
-      .typing-row {
-        min-height: 1.4rem;
+      .brand-row {
         display: flex;
         align-items: center;
+        gap: 0.65rem;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: 2rem;
+        letter-spacing: 0.04em;
+        color: #7dff9a;
+        text-shadow: 0 0 24px rgba(89, 255, 130, 0.35);
+      }
+
+      .live-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #4dff7a;
+        box-shadow: 0 0 0 0 rgba(77, 255, 122, 0.6);
+        animation: live-pulse 2s infinite;
+      }
+
+      @keyframes live-pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(77, 255, 122, 0.55);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(77, 255, 122, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(77, 255, 122, 0);
+        }
+      }
+
+      .brand p {
+        margin: 0.4rem 0 0;
+        color: #c7ffd9;
+      }
+
+      .top-actions {
+        display: flex;
+        flex-wrap: wrap;
         gap: 0.5rem;
-        color: #87fca0;
-        font-size: 0.86rem;
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 999px;
+        padding: 0.7rem 1.1rem;
+        border: 1px solid rgba(125, 255, 154, 0.28);
+        background: rgba(17, 30, 16, 0.82);
+        color: #b9ffd4;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .icon-btn:hover {
+        background: rgba(49, 255, 140, 0.14);
+        transform: translateY(-1px);
+      }
+
+      .icon-btn[data-state="on"] {
+        background: rgba(49, 255, 140, 0.22);
+        border-color: #59ff82;
+      }
+
+      .chat-panel {
+        display: grid;
+        gap: 1rem;
+      }
+
+      /* ---------- typing indicator (above chat box) ---------- */
+      .typing-row {
+        display: inline-flex;
+        justify-self: start;
+        align-self: flex-start;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.45rem 0.9rem 0.45rem 0.45rem;
+        border-radius: 999px;
+        background: rgba(49, 255, 140, 0.1);
+        border: 1px solid rgba(125, 255, 154, 0.22);
+        color: #b9ffd4;
+        font-size: 0.85rem;
+        font-weight: 500;
         opacity: 0;
-        transform: translateY(4px);
+        transform: translateY(6px) scale(0.98);
         transition: opacity 0.25s ease, transform 0.25s ease;
+        pointer-events: none;
+        margin-left: 0.1rem;
       }
 
       .typing-row.visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
+      }
+
+      .typing-avatar {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #041107;
+        background: linear-gradient(135deg, #3bff5a, #0cb45e);
       }
 
       .typing-dots {
@@ -57,198 +317,648 @@
         animation-delay: 0.3s;
       }
 
-      .messages {
-        flex: 1;
-        min-height: 260px;
-        display: grid;
-        align-content: start;
+      @keyframes typing-bounce {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.5;
+        }
+        30% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+
+      /* ---------- chat box ---------- */
+      .chat-box {
+        position: relative;
+        background: rgba(10, 16, 11, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.16);
+        border-radius: 32px;
+        padding: 1.5rem;
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.28);
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
+        overflow: hidden;
+      }
+
+      .chat-box::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #1c8f45, #6dff9a, #1c8f45, #2bd97e, #1c8f45);
+        background-size: 300% 100%;
+        animation: aurora-shift 6s linear infinite;
+      }
+
+      @keyframes aurora-shift {
+        to {
+          background-position: 300% 0;
+        }
+      }
+
+      .messages-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .messages {
+        display: grid;
+        gap: 0.85rem;
+        height: 440px;
         overflow-y: auto;
-        padding-right: 0.25rem;
+        padding: 0.25rem 0.35rem 0.25rem 0.1rem;
         scroll-behavior: smooth;
       }
 
-      .message {
-        padding: 1rem 1.15rem;
-        border: 1px solid rgba(89, 255, 130, 0.16);
-        border-radius: 22px;
-        background: rgba(36, 58, 37, 0.92);
+      .messages::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .messages::-webkit-scrollbar-thumb {
+        background: rgba(125, 255, 154, 0.25);
+        border-radius: 999px;
+      }
+
+      .day-divider {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #6fd88e;
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0.2rem 0;
+      }
+
+      .day-divider::before,
+      .day-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(125, 255, 154, 0.14);
+      }
+
+      /* ---------- message rows ---------- */
+      .message-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.55rem;
         animation: message-in 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) both;
       }
 
-      .message.own {
-        border-color: rgba(89, 255, 130, 0.35);
-        background: rgba(49, 255, 140, 0.14);
+      .message-row.no-anim {
+        animation: none;
       }
 
-      .message strong,
-      .message time {
-        display: block;
+      .message-row.own {
+        flex-direction: row-reverse;
       }
 
-      .message strong {
-        margin-bottom: 0.35rem;
-        color: #d9ffdf;
+      @keyframes message-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
       }
 
-      .message .text {
-        color: #c6ffd4;
-        line-height: 1.7;
-        white-space: pre-wrap;
+      .avatar {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #041107;
+      }
+
+      .message-row.grouped .avatar {
+        visibility: hidden;
+      }
+
+      .message-col {
+        display: flex;
+        flex-direction: column;
+        max-width: min(70%, 420px);
+      }
+
+      .message-row.own .message-col {
+        align-items: flex-end;
+      }
+
+      .message-name {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #9dffb2;
+        margin: 0 0.2rem 0.3rem;
+      }
+
+      .bubble {
+        padding: 0.7rem 0.95rem;
+        border-radius: 20px 20px 20px 6px;
+        background: rgba(36, 58, 37, 0.92);
+        border: 1px solid rgba(89, 255, 130, 0.16);
         word-break: break-word;
+        line-height: 1.55;
+        color: #dbffe4;
       }
 
-      .message .attachment {
-        margin-top: 0.7rem;
+      .message-row.own .bubble {
+        border-radius: 20px 20px 6px 20px;
+        background: linear-gradient(135deg, rgba(59, 255, 90, 0.24), rgba(12, 180, 94, 0.2));
+        border-color: rgba(89, 255, 130, 0.4);
+      }
+
+      .bubble .attachment {
+        border-radius: 14px;
         overflow: hidden;
-        max-width: 360px;
-        border: 1px solid var(--color-border);
-        border-radius: 16px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        max-width: 240px;
+        line-height: 0;
       }
 
-      .message .attachment img,
-      .message .attachment video {
+      .bubble .attachment + .bubble-text {
+        margin-top: 0.5rem;
+      }
+
+      .bubble .attachment img,
+      .bubble .attachment video {
         display: block;
         width: 100%;
         height: auto;
       }
 
-      .message time {
-        margin-top: 0.7rem;
-        color: #87fca0;
-        font-size: 0.82rem;
+      .bubble-time {
+        font-size: 0.72rem;
+        color: #7fd696;
+        margin: 0.3rem 0.25rem 0;
       }
 
+      .message-row.own .bubble-time {
+        text-align: right;
+      }
+
+      /* ---------- scroll-to-bottom ---------- */
+      .scroll-bottom-btn {
+        position: absolute;
+        right: 0.4rem;
+        bottom: 0.6rem;
+        display: none;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid rgba(125, 255, 154, 0.3);
+        background: rgba(8, 16, 9, 0.92);
+        color: #b9ffd4;
+        border-radius: 999px;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      .scroll-bottom-btn.visible {
+        display: inline-flex;
+      }
+
+      .scroll-bottom-btn .badge {
+        background: #3bff5a;
+        color: #041107;
+        border-radius: 999px;
+        padding: 0.05rem 0.4rem;
+        font-size: 0.7rem;
+      }
+
+      /* ---------- attach preview ---------- */
       .attach-preview {
         display: none;
         align-items: center;
         gap: 0.75rem;
-        padding: 0.7rem 0.85rem;
-        border: 1px solid rgba(125, 255, 154, 0.2);
+        padding: 0.6rem 0.8rem;
         border-radius: 16px;
+        border: 1px solid rgba(125, 255, 154, 0.2);
         background: rgba(11, 22, 12, 0.92);
       }
 
       .attach-preview.visible {
         display: flex;
+        animation: message-in 0.25s ease both;
+      }
+
+      .attach-preview img,
+      .attach-preview video {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 10px;
       }
 
       .attach-preview .meta {
         flex: 1;
-        display: grid;
-        gap: 0.25rem;
-        color: var(--color-text-muted);
+        min-width: 0;
         font-size: 0.85rem;
+        color: #c7ffd9;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
       }
 
-      .progress {
-        height: 4px;
+      .attach-preview .meta span {
         overflow: hidden;
-        border-radius: var(--radius-full);
-        background: rgba(255, 255, 255, 0.08);
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      .progress-bar {
-        display: block;
-        width: 0;
+      .attach-preview .progress {
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .attach-preview .progress-bar {
         height: 100%;
-        background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
+        width: 0%;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
         transition: width 0.2s ease;
       }
 
-      .remove-attach,
-      .tool-btn {
-        display: grid;
-        place-items: center;
-        width: 2.6rem;
-        height: 2.6rem;
-        border-radius: 14px;
-        cursor: pointer;
-      }
-
-      .remove-attach {
-        border: 0;
+      .attach-preview .remove-attach {
+        border: none;
         background: rgba(255, 90, 90, 0.14);
         color: #ffb2b2;
-        font-weight: 800;
+        border-radius: 999px;
+        width: 1.8rem;
+        height: 1.8rem;
+        min-width: 1.8rem;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      /* ---------- form / toolbar ---------- */
+      .chat-form {
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .input-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.6rem;
+      }
+
+      .input-row.drag-over textarea {
+        border-color: #59ff82;
+        box-shadow: 0 0 0 3px rgba(89, 255, 130, 0.18);
+      }
+
+      .chat-form textarea {
+        flex: 1;
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 0.85rem 1.05rem;
+        font: inherit;
+        resize: none;
+        max-height: 160px;
+        min-height: 48px;
+        line-height: 1.5;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .chat-form textarea:focus {
+        outline: none;
+        border-color: rgba(89, 255, 130, 0.6);
+      }
+
+      .toolbar-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tool-btn {
+        border: 1px solid rgba(125, 255, 154, 0.2);
+        background: rgba(11, 22, 12, 0.92);
+        color: #b9ffd4;
+        width: 2.5rem;
+        height: 2.5rem;
+        min-width: 2.5rem;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+      }
+
+      .tool-btn:hover {
+        background: rgba(49, 255, 140, 0.14);
+        transform: translateY(-1px);
+      }
+
+      .tool-btn[data-state="on"] {
+        background: rgba(49, 255, 140, 0.22);
+        border-color: #59ff82;
       }
 
       .chat-form-row {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         gap: 1rem;
       }
 
-      .toolbar {
-        display: flex;
-        gap: 0.55rem;
+      .char-count {
+        font-size: 0.76rem;
+        color: #6fd88e;
       }
 
-      .gif-picker {
+      .send-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 0.9rem 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        color: #041107;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .send-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(49, 255, 140, 0.25);
+      }
+
+      .send-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid rgba(4, 17, 7, 0.35);
+        border-top-color: #041107;
+        animation: spin 0.7s linear infinite;
         display: none;
-        grid-template-columns: 1fr;
-        gap: 0.65rem;
-        max-height: 340px;
-        padding: 0.85rem;
-        border: 1px solid rgba(125, 255, 154, 0.2);
-        border-radius: 18px;
-        background: rgba(6, 12, 7, 0.96);
       }
 
-      .gif-picker.visible {
-        display: grid;
+      .send-btn.loading .spinner {
+        display: inline-block;
+      }
+
+      .send-btn.loading .send-label {
+        display: none;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ---------- popovers (gif + emoji) ---------- */
+      .popover {
+        position: absolute;
+        bottom: calc(100% + 0.6rem);
+        left: 0;
+        width: min(340px, 88vw);
+        background: rgba(6, 12, 7, 0.98);
+        border: 1px solid rgba(125, 255, 154, 0.22);
+        border-radius: 18px;
+        padding: 0.85rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+        z-index: 40;
+        display: none;
+        flex-direction: column;
+        gap: 0.6rem;
+        animation: popover-in 0.18s ease both;
+      }
+
+      .popover.visible {
+        display: flex;
+      }
+
+      @keyframes popover-in {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .gif-picker input {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 0.6rem 0.8rem;
+        font: inherit;
+      }
+
+      .gif-picker input:focus {
+        outline: none;
+        border-color: rgba(89, 255, 130, 0.6);
       }
 
       .gif-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
-        gap: 0.5rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.45rem;
         overflow-y: auto;
         max-height: 230px;
       }
 
       .gif-grid button {
-        aspect-ratio: 1 / 1;
-        overflow: hidden;
-        padding: 0;
         border: 1px solid transparent;
         border-radius: 10px;
-        background: rgba(255, 255, 255, 0.03);
+        overflow: hidden;
+        padding: 0;
         cursor: pointer;
+        background: rgba(255, 255, 255, 0.03);
+        aspect-ratio: 1 / 1;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+      }
+
+      .gif-grid button:hover {
+        border-color: rgba(89, 255, 130, 0.6);
+        transform: scale(1.03);
       }
 
       .gif-grid img {
-        display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        display: block;
       }
 
+      .gif-attrib {
+        text-align: center;
+        font-size: 0.68rem;
+        color: #5fbf7d;
+      }
+
+      .gif-empty {
+        font-size: 0.85rem;
+        color: #87fca0;
+        padding: 0.5rem 0.2rem;
+        grid-column: 1 / -1;
+      }
+
+      .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.35rem;
+      }
+
+      .emoji-grid button {
+        border: 1px solid transparent;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        font-size: 1.25rem;
+        padding: 0.35rem 0;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+      }
+
+      .emoji-grid button:hover {
+        background: rgba(49, 255, 140, 0.14);
+        transform: scale(1.1);
+      }
+
+      .notify-banner {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 0.9rem 1.2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(125, 255, 154, 0.28);
+        background: linear-gradient(135deg, rgba(49, 255, 140, 0.14), rgba(12, 180, 94, 0.08));
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        animation: message-in 0.3s ease both;
+      }
+
+      .notify-banner.visible {
+        display: flex;
+      }
+
+      .notify-banner p {
+        margin: 0;
+        color: #d9ffe4;
+        font-size: 0.92rem;
+        font-weight: 500;
+      }
+
+      .notify-banner .notify-banner-actions {
+        display: flex;
+        gap: 0.6rem;
+      }
+
+      .notify-banner button {
+        border-radius: 999px;
+        padding: 0.55rem 1rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border: 1px solid rgba(125, 255, 154, 0.28);
+      }
+
+      .notify-banner .accept-btn {
+        border: none;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        color: #041107;
+      }
+
+      .notify-banner .dismiss-btn {
+        background: transparent;
+        color: #b9ffd4;
+      }
+
+      .notify-banner .accept-btn:hover,
+      .notify-banner .dismiss-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3rem);
+        color: #d4ffda;
+      }
+
+      .section-description {
+        margin: 0.6rem 0 0;
+        color: #c7ffd7;
+        max-width: 42rem;
+      }
+
+      .user-note {
+        margin: 1rem 0 0;
+        color: #b6ffd3;
+        font-size: 0.95rem;
+      }
+
+      /* ---------- toast ---------- */
       .toast-stack {
         position: fixed;
         top: 1.2rem;
         right: 1.2rem;
-        z-index: 50;
         display: grid;
         gap: 0.6rem;
+        z-index: 70;
+        max-width: min(300px, 80vw);
       }
 
       .toast {
-        min-width: 220px;
-        max-width: 280px;
-        padding: 0.8rem 1rem;
+        background: rgba(8, 16, 9, 0.96);
         border: 1px solid rgba(89, 255, 130, 0.35);
         border-radius: 16px;
-        background: rgba(8, 16, 9, 0.95);
+        padding: 0.8rem 1rem;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-        animation: fade-up 0.3s ease both;
+        animation: toast-in 0.3s ease both;
+      }
+
+      .toast.error {
+        border-color: rgba(255, 110, 110, 0.5);
       }
 
       .toast strong {
         display: block;
         color: #9dffb2;
         font-size: 0.88rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .toast.error strong {
+        color: #ffb2b2;
       }
 
       .toast span {
@@ -256,259 +966,644 @@
         font-size: 0.85rem;
       }
 
-      @keyframes typing-bounce {
-        0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-        30% { transform: translateY(-4px); opacity: 1; }
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
       }
 
-      @media (max-width: 720px) {
-        .chat-form-row {
-          align-items: stretch;
-          flex-direction: column;
+      @media (max-width: 900px) {
+        .messages {
+          height: 380px;
         }
 
-        .chat-form-row .btn-primary {
-          width: 100%;
+        .gif-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .message-col {
+          max-width: 82%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .message-row,
+        .toast,
+        .attach-preview,
+        .popover,
+        .live-dot,
+        .chat-box::before {
+          animation: none !important;
+        }
+        .messages {
+          scroll-behavior: auto;
         }
       }
     </style>
   </head>
   <body>
-    <button class="hamburger" aria-label="Open menu" aria-expanded="false" onclick="toggleSidebar()"><span></span></button>
+    <button class="hamburger" aria-label="Open menu" onclick="toggleSidebar()">
+      <div></div>
+    </button>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
     <aside class="sidebar" id="sidebar">
       <h2>MENU</h2>
       <ul class="menu-list">
         <li><a href="/">Home</a></li>
         <li><a href="/community">Community</a></li>
-        <li><a href="/videos">Videos</a></li>
-        <li><a class="active" href="/chat">Chat</a></li>
-        <li><a href="/upload">Upload</a></li>
+        <li><a href="/chat">Chat</a></li>
         <li><a href="/auth">Account</a></li>
-        <li><a href="/logout">Logout</a></li>
+        <li><a href="/community">Feedback</a></li>
+        <li><a class="logout-button" href="/logout">Logout</a></li>
       </ul>
     </aside>
 
     <div class="toast-stack" id="toastStack"></div>
 
-    <main class="page-wrap">
-      <div class="topbar">
-        <div class="brand">
-          <h1>PARALLAX</h1>
-          <p>Live chat with full messages, media, GIFs, and typing state.</p>
+    <div class="page-wrap">
+      <div class="notify-banner" id="notifyBanner">
+        <p>🔔 Want a heads-up when new messages arrive?</p>
+        <div class="notify-banner-actions">
+          <button type="button" class="accept-btn" id="notifyBannerAccept">Yes, notify me</button>
+          <button type="button" class="dismiss-btn" id="notifyBannerDismiss">Not now</button>
         </div>
-        <button class="notify-btn" id="notifyBtn" type="button" onclick="toggleNotifications()">
-          <span id="notifyLabel">Enable notifications</span>
-        </button>
       </div>
 
-      <section class="chat-panel">
-        <div class="panel chat-box">
-          <div class="typing-row" id="typingRow">
-            <span class="typing-dots"><span></span><span></span><span></span></span>
-            <span id="typingText"></span>
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-row">
+            <h1>PARALLAX</h1>
+            <span class="live-dot" title="Live"></span>
           </div>
-          <div class="messages" id="messages">
-            <div class="empty-state"><strong>No messages yet</strong><span>Start the conversation when you are ready.</span></div>
+          <p>Chat Room</p>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="soundBtn" onclick="toggleSound()" title="Play a sound on new messages">
+            🔊 <span id="soundLabel">Sound off</span>
+          </button>
+          <button class="icon-btn" id="notifyBtn" onclick="toggleNotifications()">
+            🔔 <span id="notifyLabel">Enable notifications</span>
+          </button>
+          <button class="icon-btn" id="testNotifyBtn" onclick="sendTestNotification()" title="Fires immediately, ignoring the tab-focus rule">
+            🧪 Test
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-panel">
+        <div>
+          <p class="section-title">Live chat</p>
+          <p class="section-description">Send messages, GIFs, photos, and clips to the community — stay in sync with who's typing.</p>
+          <p class="user-note" id="userNote">Loading user…</p>
+        </div>
+
+        <div class="typing-row" id="typingRow">
+          <span class="typing-avatar" id="typingAvatar"></span>
+          <span class="typing-dots"><span></span><span></span><span></span></span>
+          <span id="typingText"></span>
+        </div>
+
+        <div class="chat-box">
+          <div class="messages-wrap">
+            <div class="messages" id="messages"></div>
+            <button type="button" class="scroll-bottom-btn" id="scrollBottomBtn">
+              ↓ New messages <span class="badge" id="unreadBadge">0</span>
+            </button>
           </div>
-          <form class="chat-form form" id="chatForm">
-            <div class="gif-picker" id="gifPicker">
-              <input type="text" id="gifSearch" placeholder="Search Tenor GIFs..." />
-              <div class="gif-grid" id="gifGrid"></div>
-            </div>
+
+          <form class="chat-form" id="chatForm">
             <div class="attach-preview" id="attachPreview">
               <span class="meta">
-                <span id="attachName">Uploading...</span>
+                <span id="attachName">Uploading…</span>
                 <span class="progress"><span class="progress-bar" id="attachProgress"></span></span>
               </span>
-              <button type="button" class="remove-attach" id="attachRemove" title="Remove attachment">X</button>
+              <button type="button" class="remove-attach" id="attachRemove" title="Remove attachment">✕</button>
             </div>
-            <textarea id="messageInput" placeholder="Write a message..."></textarea>
-            <div class="chat-form-row">
-              <div class="toolbar">
+
+            <div class="input-row" id="inputRow">
+              <div class="toolbar-wrap">
                 <button type="button" class="tool-btn" id="gifToggle" title="Send a GIF">GIF</button>
-                <button type="button" class="tool-btn" id="mediaToggle" title="Attach media">+</button>
+
+                <div class="popover gif-picker" id="gifPicker">
+                  <input type="text" id="gifSearch" placeholder="Search GIPHY…" />
+                  <div class="gif-grid" id="gifGrid"></div>
+                  <div class="gif-attrib">Powered by GIPHY</div>
+                </div>
+
+                <button type="button" class="tool-btn" id="emojiToggle" title="Insert an emoji">🙂</button>
+                <div class="popover" id="emojiPicker">
+                  <div class="emoji-grid" id="emojiGrid"></div>
+                </div>
+
+                <button type="button" class="tool-btn" id="mediaToggle" title="Send a photo or video">📎</button>
                 <input type="file" id="mediaInput" accept="image/*,video/*" hidden />
               </div>
-              <button class="btn-primary" type="submit" id="sendBtn">Send message</button>
+
+              <textarea id="messageInput" placeholder="Write a message... (drag & drop or paste an image too)" rows="1"></textarea>
+            </div>
+
+            <div class="chat-form-row">
+              <span class="char-count" id="charCount"></span>
+              <button type="submit" class="send-btn" id="sendBtn">
+                <span class="spinner"></span>
+                <span class="send-label">Send message</span>
+              </button>
             </div>
           </form>
         </div>
-        <p class="user-note" id="userNote">Loading user...</p>
-      </section>
-    </main>
+      </div>
+    </div>
 
     <script>
+      // ------------------------------------------------------------------
+      // Cloudinary — client-side uploads use the cloud name + an UNSIGNED
+      // upload preset only. The API secret must never live in browser code
+      // (page source is public), so it is intentionally absent here.
+      //
+      // Setup once in the Cloudinary dashboard:
+      //   Settings → Upload → Upload presets → Add upload preset
+      //   Set "Signing Mode" to Unsigned, then paste its name below.
+      // ------------------------------------------------------------------
       const CLOUDINARY_CLOUD_NAME = "dcbo4oozo";
-      const CLOUDINARY_UPLOAD_PRESET = "REPLACE_WITH_YOUR_UNSIGNED_PRESET";
+      const CLOUDINARY_UPLOAD_PRESET = "586198498726618";
       const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
-      const TENOR_API_KEY = "REPLACE_WITH_YOUR_TENOR_API_KEY";
-      const TENOR_CLIENT_KEY = "parallax_chat";
+
+      // ------------------------------------------------------------------
+      // GIPHY GIF search — get a free API key at https://developers.giphy.com
+      // and paste it below. Without a key the GIF picker will show a
+      // message instead of results (it will NOT silently fail to send).
+      // ------------------------------------------------------------------
+      const GIPHY_API_KEY = "ANONnVDHW6PZx4h1wLDwwoXQxJng7Kgv";
+
+      const EMOJI_LIST = ["😀", "😂", "😍", "🔥", "🎉", "👍", "👎", "❤️", "😮", "😢", "🙌", "💯", "🤝", "😎", "🤔", "🙏", "👀", "✨"];
 
       const messagesEl = document.getElementById("messages");
+      const messagesWrap = document.querySelector(".messages-wrap");
       const chatForm = document.getElementById("chatForm");
       const messageInput = document.getElementById("messageInput");
       const userNote = document.getElementById("userNote");
       const sidebar = document.getElementById("sidebar");
+      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
       const hamburger = document.querySelector(".hamburger");
       const sendBtn = document.getElementById("sendBtn");
+      const charCount = document.getElementById("charCount");
+      const inputRow = document.getElementById("inputRow");
+
       const gifToggle = document.getElementById("gifToggle");
       const gifPicker = document.getElementById("gifPicker");
       const gifSearch = document.getElementById("gifSearch");
       const gifGrid = document.getElementById("gifGrid");
+
+      const emojiToggle = document.getElementById("emojiToggle");
+      const emojiPicker = document.getElementById("emojiPicker");
+      const emojiGrid = document.getElementById("emojiGrid");
+
       const mediaToggle = document.getElementById("mediaToggle");
       const mediaInput = document.getElementById("mediaInput");
       const attachPreview = document.getElementById("attachPreview");
       const attachName = document.getElementById("attachName");
       const attachProgress = document.getElementById("attachProgress");
       const attachRemove = document.getElementById("attachRemove");
+
       const typingRow = document.getElementById("typingRow");
+      const typingAvatar = document.getElementById("typingAvatar");
       const typingText = document.getElementById("typingText");
+
       const notifyBtn = document.getElementById("notifyBtn");
       const notifyLabel = document.getElementById("notifyLabel");
+      const notifyBanner = document.getElementById("notifyBanner");
+      const notifyBannerAccept = document.getElementById("notifyBannerAccept");
+      const notifyBannerDismiss = document.getElementById("notifyBannerDismiss");
+      const soundBtn = document.getElementById("soundBtn");
+      const soundLabel = document.getElementById("soundLabel");
       const toastStack = document.getElementById("toastStack");
+      const scrollBottomBtn = document.getElementById("scrollBottomBtn");
+      const unreadBadge = document.getElementById("unreadBadge");
 
       let username = "";
-      let pendingAttachment = null;
+      let pendingAttachment = null; // { type: 'image'|'video'|'gif', url }
       let knownMessageKeys = new Set();
       let firstLoad = true;
       let typingTimeout = null;
       let gifSearchTimeout = null;
+      let soundEnabled = false;
+      let stickToBottom = true;
+      let unreadCount = 0;
+      let audioCtx = null;
 
-      function toggleSidebar() {
-        const isOpen = sidebar.classList.toggle("open");
-        hamburger.classList.toggle("is-open", isOpen);
-        hamburger.setAttribute("aria-expanded", String(isOpen));
+      // ---------------- sidebar ----------------
+      function toggleSidebar(force) {
+        const open = force ?? !sidebar.classList.contains("open");
+        sidebar.classList.toggle("open", open);
+        sidebarBackdrop.classList.toggle("visible", open);
       }
 
       document.addEventListener("click", (event) => {
         if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains("open")) {
-          toggleSidebar();
+          toggleSidebar(false);
+        }
+        if (gifPicker.classList.contains("visible") && !gifPicker.contains(event.target) && event.target !== gifToggle) {
+          togglePopover(gifPicker, false);
+        }
+        if (emojiPicker.classList.contains("visible") && !emojiPicker.contains(event.target) && event.target !== emojiToggle) {
+          togglePopover(emojiPicker, false);
         }
       });
 
-      function showToast(title, body) {
+      // ---------------- toasts ----------------
+      function showToast(title, body, isError) {
         const toast = document.createElement("div");
-        toast.className = "toast";
-        toast.innerHTML = "<strong></strong><span></span>";
+        toast.className = "toast" + (isError ? " error" : "");
+        toast.innerHTML = `<strong></strong><span></span>`;
         toast.querySelector("strong").textContent = title;
         toast.querySelector("span").textContent = body;
         toastStack.appendChild(toast);
-        setTimeout(() => toast.remove(), 4500);
+        setTimeout(() => toast.remove(), 5000);
       }
 
+      // ---------------- sound ----------------
+      function toggleSound() {
+        soundEnabled = !soundEnabled;
+        soundBtn.dataset.state = soundEnabled ? "on" : "off";
+        soundLabel.textContent = soundEnabled ? "Sound on" : "Sound off";
+        if (soundEnabled) playPing(); // quick confirmation blip
+      }
+
+      function playPing() {
+        try {
+          audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = 720;
+          gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.28);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        } catch (err) {
+          // audio isn't critical — ignore failures silently
+        }
+      }
+
+      // ---------------- notifications ----------------
+      function maybeShowNotifyBanner() {
+        if (!("Notification" in window)) return;
+        if (Notification.permission !== "default") return; // already decided
+        notifyBanner.classList.add("visible");
+      }
+
+      notifyBannerAccept.addEventListener("click", async () => {
+        try {
+          const permission = await Notification.requestPermission();
+          updateNotifyButton();
+          if (permission === "granted") {
+            showToast("Notifications on", "You'll be notified about new messages while this tab isn't focused.");
+          } else {
+            showToast("Not enabled", "Permission wasn't granted.", true);
+          }
+        } catch (err) {
+          showToast("Couldn't request permission", String(err.message || err), true);
+        } finally {
+          notifyBanner.classList.remove("visible");
+        }
+      });
+
+      notifyBannerDismiss.addEventListener("click", () => {
+        notifyBanner.classList.remove("visible");
+      });
+
       function updateNotifyButton() {
-        const enabled = "Notification" in window && Notification.permission === "granted";
-        notifyBtn.dataset.state = enabled ? "on" : "off";
-        notifyLabel.textContent = enabled ? "Notifications on" : "Enable notifications";
+        if (!("Notification" in window)) {
+          notifyBtn.dataset.state = "off";
+          notifyLabel.textContent = "Not supported here";
+          return;
+        }
+        const state = Notification.permission;
+        notifyBtn.dataset.state = state === "granted" ? "on" : "off";
+        notifyLabel.textContent =
+          state === "granted" ? "Notifications on" : state === "denied" ? "Blocked — check settings" : "Enable notifications";
       }
 
       async function toggleNotifications() {
         if (!("Notification" in window)) {
-          showToast("Not supported", "Your browser does not support notifications.");
+          showToast("Not supported", "This browser doesn't expose the Notification API.", true);
           return;
         }
         if (Notification.permission === "granted") {
-          showToast("Notifications", "Notifications are already on.");
+          showToast("Already on", "Notifications are enabled for this browser.");
           return;
         }
-        const permission = await Notification.requestPermission();
-        updateNotifyButton();
-        if (permission === "granted") showToast("Notifications on", "You will be notified about new messages.");
+        if (Notification.permission === "denied") {
+          showToast("Blocked by browser", "Re-enable notifications in your browser's site settings, then reload.", true);
+          return;
+        }
+        try {
+          const permission = await Notification.requestPermission();
+          updateNotifyButton();
+          notifyBanner.classList.remove("visible");
+          if (permission === "granted") {
+            showToast("Notifications on", "You'll be notified about new messages while this tab isn't focused.");
+          } else {
+            showToast("Not enabled", "Permission wasn't granted.", true);
+          }
+        } catch (err) {
+          showToast("Couldn't request permission", String(err.message || err), true);
+        }
+      }
+
+      function sendTestNotification() {
+        if (!("Notification" in window)) {
+          showToast("Not supported", "Try opening this file in a normal browser tab, not an embedded preview.", true);
+          return;
+        }
+        if (Notification.permission !== "granted") {
+          showToast("Enable notifications first", 'Click "Enable notifications", then try the test again.', true);
+          return;
+        }
+        try {
+          const n = new Notification("PARALLAX — test notification", {
+            body: "If you can see this, notifications are working.",
+          });
+          n.onclick = () => {
+            window.focus();
+            n.close();
+          };
+        } catch (err) {
+          showToast("Notification failed", String(err.message || err), true);
+        }
       }
 
       function notifyNewMessage(message) {
-        if (document.hasFocus()) return;
+        if (soundEnabled) playPing();
+        if (document.hasFocus()) return; // intentional — you're already looking at it
         if (!("Notification" in window) || Notification.permission !== "granted") return;
         const body = !message.type || message.type === "text" ? message.message || "" : `sent a ${message.type}`;
-        const notification = new Notification(`${message.name} - PARALLAX`, { body: body.slice(0, 120), silent: false });
-        notification.onclick = () => {
-          window.focus();
-          notification.close();
-        };
-      }
-
-      async function loadUser() {
-        const res = await fetch("/api/auth/me");
-        if (!res.ok) {
-          window.location.href = "/auth";
-          return;
+        try {
+          const n = new Notification(`${message.name} — PARALLAX`, { body: body.slice(0, 120) });
+          n.onclick = () => {
+            window.focus();
+            n.close();
+          };
+        } catch (err) {
+          console.error("Notification failed:", err);
         }
-        const data = await res.json();
-        username = data.username;
-        userNote.textContent = `Signed in as ${username}`;
       }
 
-      function renderAttachment(message) {
-        if (!message.type || message.type === "text") return "";
-        const url = message.attachmentUrl || message.url;
-        if (!url) return "";
-        if (message.type === "video") return `<div class="attachment"><video src="${url}" controls playsinline></video></div>`;
-        return `<div class="attachment"><img src="${url}" alt="attachment" loading="lazy" /></div>`;
+      // ---------------- user ----------------
+      async function loadUser() {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/auth";
+            return;
+          }
+          if (!res.ok) {
+            userNote.textContent = "Couldn't load your account — check the connection.";
+            return;
+          }
+          const data = await res.json();
+          username = data.username;
+          userNote.textContent = `Signed in as ${username}`;
+        } catch (err) {
+          userNote.textContent = "Couldn't reach the server.";
+        }
+      }
+
+      // ---------------- avatar ----------------
+      function hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          hash = (hash << 5) - hash + str.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash);
+      }
+
+      function avatarStyle(name) {
+        const hue = hashString(name || "?") % 360;
+        return `background: hsl(${hue} 70% 62%);`;
+      }
+
+      function initials(name) {
+        if (!name) return "?";
+        const parts = name.trim().split(/\s+/);
+        return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || name[0].toUpperCase();
+      }
+
+      // ---------------- messages ----------------
+      const IMAGE_URL_RE = /^https?:\/\/\S+\.(gif|png|jpe?g|webp|avif)(\?\S*)?$/i;
+      const VIDEO_URL_RE = /^https?:\/\/\S+\.(mp4|webm|mov|m4v)(\?\S*)?$/i;
+      // Hosts that serve media without a file extension in the URL (GIPHY's
+      // redirect/CDN links, Cloudinary's auto-format delivery, etc).
+      const MEDIA_HOST_RE = /^https?:\/\/(media\d*\.giphy\.com|i\.giphy\.com|media\.giphy\.com|res\.cloudinary\.com)\//i;
+
+      // Figures out how to render a message even when a backend only echoes
+      // back a plain "message" string and drops the type/attachmentUrl
+      // fields — this is what makes GIF/image links actually render as
+      // media instead of showing up as bare text.
+      function resolveAttachment(message) {
+        if (message.type && message.type !== "text") {
+          const url = message.attachmentUrl || message.url;
+          if (url) return { type: message.type, url, textIsUrl: url === message.message };
+        }
+        const text = (message.message || "").trim();
+        if (text && !text.includes(" ")) {
+          if (IMAGE_URL_RE.test(text) || (MEDIA_HOST_RE.test(text) && !VIDEO_URL_RE.test(text))) {
+            return { type: "image", url: text, textIsUrl: true };
+          }
+          if (VIDEO_URL_RE.test(text)) {
+            return { type: "video", url: text, textIsUrl: true };
+          }
+        }
+        return null;
+      }
+
+      function renderAttachment(attachment) {
+        if (!attachment) return "";
+        if (attachment.type === "video") {
+          return `<div class="attachment"><video src="${attachment.url}" controls playsinline></video></div>`;
+        }
+        return `<div class="attachment"><img src="${attachment.url}" alt="attachment" loading="lazy" /></div>`;
       }
 
       function messageKey(message) {
         return message.id || `${message.name}|${message.timestamp}|${message.message || message.url || ""}`;
       }
 
+      function dayLabel(timestamp) {
+        const d = new Date(timestamp);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const sameDay = (a, b) => a.toDateString() === b.toDateString();
+        if (sameDay(d, today)) return "Today";
+        if (sameDay(d, yesterday)) return "Yesterday";
+        return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      }
+
+      function isAtBottom() {
+        return messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 24;
+      }
+
+      function scrollToBottom() {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        unreadCount = 0;
+        unreadBadge.textContent = "0";
+        scrollBottomBtn.classList.remove("visible");
+      }
+
+      scrollBottomBtn.addEventListener("click", scrollToBottom);
+
+      messagesEl.addEventListener("scroll", () => {
+        stickToBottom = isAtBottom();
+        if (stickToBottom) {
+          unreadCount = 0;
+          unreadBadge.textContent = "0";
+          scrollBottomBtn.classList.remove("visible");
+        }
+      });
+
       async function loadMessages() {
-        const res = await fetch("/api/chat/messages");
-        if (!res.ok) {
+        let res;
+        try {
+          res = await fetch("/api/chat/messages");
+        } catch (err) {
+          // network hiccup during background polling — don't kick the user out
+          console.error("Couldn't load messages:", err);
+          return;
+        }
+
+        if (res.status === 401 || res.status === 403) {
           window.location.href = "/auth";
           return;
         }
+        if (!res.ok) {
+          showToast("Couldn't refresh chat", `Server responded with ${res.status}.`, true);
+          return;
+        }
+
         const data = await res.json();
-        const wasAtBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 20;
+        const wasAtBottom = stickToBottom;
+
         const newKeys = new Set();
         messagesEl.innerHTML = "";
-
-        if (!data.messages.length) {
-          messagesEl.innerHTML = `<div class="empty-state"><strong>No messages yet</strong><span>Start the conversation when you are ready.</span></div>`;
-        }
+        let lastSender = null;
+        let lastDay = null;
 
         data.messages.forEach((message) => {
           const key = messageKey(message);
           newKeys.add(key);
-          const isNew = !firstLoad && !knownMessageKeys.has(key);
-          const messageEl = document.createElement("div");
-          messageEl.className = "message" + (message.name === username ? " own" : "");
-          if (!isNew) messageEl.style.animation = "none";
+          const isNew = !knownMessageKeys.has(key);
+          const shouldNotify = isNew && !firstLoad && message.name !== username;
+          const isOwn = message.name === username;
 
-          const author = document.createElement("strong");
-          author.textContent = message.name;
-          const text = document.createElement("div");
-          text.className = "text";
-          text.textContent = message.message || "";
-          const time = document.createElement("time");
-          time.textContent = new Date(message.timestamp).toLocaleString();
+          const day = dayLabel(message.timestamp);
+          if (day !== lastDay) {
+            const divider = document.createElement("div");
+            divider.className = "day-divider";
+            divider.textContent = day;
+            messagesEl.appendChild(divider);
+            lastDay = day;
+            lastSender = null;
+          }
 
-          messageEl.appendChild(author);
-          if (message.message) messageEl.appendChild(text);
-          messageEl.insertAdjacentHTML("beforeend", renderAttachment(message));
-          messageEl.appendChild(time);
-          messagesEl.appendChild(messageEl);
-          if (isNew && message.name !== username) notifyNewMessage(message);
+          const grouped = lastSender === message.name;
+          lastSender = message.name;
+
+          const row = document.createElement("div");
+          row.className = "message-row" + (isOwn ? " own" : "") + (grouped ? " grouped" : "") + (isNew ? "" : " no-anim");
+
+          const avatar = document.createElement("div");
+          avatar.className = "avatar";
+          avatar.setAttribute("style", avatarStyle(message.name));
+          avatar.textContent = initials(message.name);
+
+          const col = document.createElement("div");
+          col.className = "message-col";
+
+          if (!grouped && !isOwn) {
+            const nameEl = document.createElement("div");
+            nameEl.className = "message-name";
+            nameEl.textContent = message.name;
+            col.appendChild(nameEl);
+          }
+
+          const bubble = document.createElement("div");
+          bubble.className = "bubble";
+          const attachment = resolveAttachment(message);
+          bubble.insertAdjacentHTML("beforeend", renderAttachment(attachment));
+          if (message.message && !(attachment && attachment.textIsUrl)) {
+            const text = document.createElement("div");
+            text.className = "bubble-text";
+            text.textContent = message.message;
+            bubble.appendChild(text);
+          }
+          col.appendChild(bubble);
+
+          const time = document.createElement("div");
+          time.className = "bubble-time";
+          time.textContent = new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          col.appendChild(time);
+
+          row.appendChild(avatar);
+          row.appendChild(col);
+          messagesEl.appendChild(row);
+
+          if (shouldNotify) {
+            notifyNewMessage(message);
+            if (!wasAtBottom) {
+              unreadCount += 1;
+              unreadBadge.textContent = String(unreadCount);
+              scrollBottomBtn.classList.add("visible");
+            }
+          }
         });
 
         knownMessageKeys = newKeys;
         firstLoad = false;
-        if (wasAtBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        if (wasAtBottom) {
+          scrollToBottom();
+        }
       }
 
+      // ---------------- typing indicator ----------------
+      // Assumes backend endpoints:
+      //   POST /api/chat/typing   { typing: true|false }
+      //   GET  /api/chat/typing   -> { typers: ["alice", "bob"] }
       async function pollTyping() {
         try {
           const res = await fetch("/api/chat/typing");
           if (!res.ok) return;
           const data = await res.json();
           const others = (data.typers || []).filter((name) => name !== username);
-          if (!others.length) {
+          if (others.length === 0) {
             typingRow.classList.remove("visible");
             typingText.textContent = "";
             return;
           }
-          typingText.textContent = others.length === 1 ? `${others[0]} is typing` : `${others.length} people are typing`;
+          const label =
+            others.length === 1
+              ? `${others[0]} is typing`
+              : others.length === 2
+              ? `${others[0]} and ${others[1]} are typing`
+              : `${others.length} people are typing`;
+          typingText.textContent = label;
+          typingAvatar.setAttribute("style", avatarStyle(others[0]));
+          typingAvatar.textContent = initials(others[0]);
           typingRow.classList.add("visible");
         } catch (err) {
-          typingRow.classList.remove("visible");
+          // non-critical — ignore
         }
       }
 
@@ -516,56 +1611,119 @@
         fetch("/api/chat/typing", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ typing: isTyping })
+          body: JSON.stringify({ typing: isTyping }),
         }).catch(() => {});
       }
 
+      // ---------------- textarea behavior ----------------
+      function autoGrow() {
+        messageInput.style.height = "auto";
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 160) + "px";
+      }
+
       messageInput.addEventListener("input", () => {
+        autoGrow();
+        charCount.textContent = messageInput.value.length > 0 ? `${messageInput.value.length}` : "";
         notifyTypingState(true);
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => notifyTypingState(false), 2000);
       });
 
-      function toggleGifPicker(forceOpen) {
-        const open = forceOpen ?? !gifPicker.classList.contains("visible");
-        gifPicker.classList.toggle("visible", open);
+      messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage(event);
+        }
+      });
+
+      // paste an image directly into the textarea
+      messageInput.addEventListener("paste", (event) => {
+        const item = Array.from(event.clipboardData?.items || []).find((i) => i.type.startsWith("image/"));
+        if (item) {
+          const file = item.getAsFile();
+          if (file) uploadToCloudinary(file);
+        }
+      });
+
+      // drag & drop a file anywhere on the input row
+      ["dragenter", "dragover"].forEach((evt) =>
+        inputRow.addEventListener(evt, (e) => {
+          e.preventDefault();
+          inputRow.classList.add("drag-over");
+        })
+      );
+      ["dragleave", "drop"].forEach((evt) =>
+        inputRow.addEventListener(evt, (e) => {
+          e.preventDefault();
+          inputRow.classList.remove("drag-over");
+        })
+      );
+      inputRow.addEventListener("drop", (e) => {
+        const file = e.dataTransfer?.files?.[0];
+        if (file) uploadToCloudinary(file);
+      });
+
+      // ---------------- popovers ----------------
+      function togglePopover(el, force) {
+        const open = force ?? !el.classList.contains("visible");
+        [gifPicker, emojiPicker].forEach((p) => p !== el && p.classList.remove("visible"));
+        el.classList.toggle("visible", open);
+        return open;
+      }
+
+      gifToggle.addEventListener("click", () => {
+        const open = togglePopover(gifPicker);
         if (open) {
           gifSearch.focus();
           if (!gifGrid.childElementCount) searchGifs("trending");
         }
-      }
+      });
 
-      gifToggle.addEventListener("click", () => toggleGifPicker());
+      emojiToggle.addEventListener("click", () => togglePopover(emojiPicker));
 
+      EMOJI_LIST.forEach((emoji) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = emoji;
+        btn.addEventListener("click", () => {
+          messageInput.value += emoji;
+          messageInput.focus();
+          autoGrow();
+        });
+        emojiGrid.appendChild(btn);
+      });
+
+      // ---------------- GIF picker (GIPHY) ----------------
       async function searchGifs(query) {
-        gifGrid.innerHTML = `<div class="empty-state">Searching...</div>`;
-        if (!TENOR_API_KEY || TENOR_API_KEY.startsWith("REPLACE_")) {
-          gifGrid.innerHTML = `<div class="empty-state">Add a Tenor API key in chat.html to enable GIF search.</div>`;
+        gifGrid.innerHTML = `<div class="gif-empty">Searching…</div>`;
+        if (!GIPHY_API_KEY || GIPHY_API_KEY.startsWith("REPLACE_")) {
+          gifGrid.innerHTML = `<div class="gif-empty">Add your GIPHY API key in the script to enable GIF search.</div>`;
           return;
         }
-        const endpoint = query === "trending"
-          ? `https://tenor.googleapis.com/v2/featured?key=${TENOR_API_KEY}&client_key=${TENOR_CLIENT_KEY}&limit=18`
-          : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${TENOR_API_KEY}&client_key=${TENOR_CLIENT_KEY}&limit=18`;
+        const endpoint =
+          query === "trending"
+            ? `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=18&rating=pg-13`
+            : `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=18&rating=pg-13`;
         try {
           const res = await fetch(endpoint);
           const data = await res.json();
           gifGrid.innerHTML = "";
-          if (!data.results || !data.results.length) {
-            gifGrid.innerHTML = `<div class="empty-state">No GIFs found.</div>`;
+          if (!data.data || data.data.length === 0) {
+            gifGrid.innerHTML = `<div class="gif-empty">No GIFs found.</div>`;
             return;
           }
-          data.results.forEach((gif) => {
-            const previewUrl = gif.media_formats?.tinygif?.url || gif.media_formats?.gif?.url;
-            const fullUrl = gif.media_formats?.gif?.url || previewUrl;
+          data.data.forEach((gif) => {
+            const previewUrl = gif.images?.fixed_width_small?.url || gif.images?.fixed_width?.url;
+            const fullUrl = gif.images?.original?.url || previewUrl;
             if (!previewUrl) return;
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.innerHTML = `<img src="${previewUrl}" alt="${gif.content_description || "GIF"}" loading="lazy" />`;
+            btn.innerHTML = `<img src="${previewUrl}" alt="${gif.title || "GIF"}" loading="lazy" />`;
             btn.addEventListener("click", () => selectGif(fullUrl));
             gifGrid.appendChild(btn);
           });
         } catch (err) {
-          gifGrid.innerHTML = `<div class="empty-state">Could not reach Tenor. Try again later.</div>`;
+          gifGrid.innerHTML = `<div class="gif-empty">Couldn't reach GIPHY. Try again later.</div>`;
         }
       }
 
@@ -575,25 +1733,27 @@
         gifSearchTimeout = setTimeout(() => searchGifs(query || "trending"), 350);
       });
 
-      function setAttachment(attachment) {
-        pendingAttachment = attachment;
-        attachPreview.classList.add("visible");
-        attachName.textContent = attachment.label || attachment.url;
-        attachProgress.style.width = "100%";
-      }
-
       function selectGif(url) {
         setAttachment({ type: "gif", url, label: "GIF selected" });
-        toggleGifPicker(false);
+        togglePopover(gifPicker, false);
       }
 
+      // ---------------- image / video upload ----------------
       mediaToggle.addEventListener("click", () => mediaInput.click());
+
       mediaInput.addEventListener("change", async () => {
         const file = mediaInput.files[0];
         if (!file) return;
         await uploadToCloudinary(file);
         mediaInput.value = "";
       });
+
+      function setAttachment(attachment) {
+        pendingAttachment = attachment;
+        attachPreview.classList.add("visible");
+        attachName.textContent = attachment.label || attachment.url;
+        attachProgress.style.width = "100%";
+      }
 
       attachRemove.addEventListener("click", () => {
         pendingAttachment = null;
@@ -603,12 +1763,14 @@
 
       async function uploadToCloudinary(file) {
         if (CLOUDINARY_UPLOAD_PRESET.startsWith("REPLACE_")) {
-          showToast("Setup needed", "Add an unsigned Cloudinary upload preset in chat.html first.");
+          showToast("Setup needed", "Add an unsigned Cloudinary upload preset in the script first.", true);
           return;
         }
+
         attachPreview.classList.add("visible");
-        attachName.textContent = `Uploading ${file.name}...`;
+        attachName.textContent = `Uploading ${file.name}…`;
         attachProgress.style.width = "10%";
+
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
@@ -618,24 +1780,41 @@
             const xhr = new XMLHttpRequest();
             xhr.open("POST", CLOUDINARY_UPLOAD_URL);
             xhr.upload.onprogress = (event) => {
-              if (event.lengthComputable) attachProgress.style.width = `${Math.round((event.loaded / event.total) * 100)}%`;
+              if (event.lengthComputable) {
+                attachProgress.style.width = `${Math.round((event.loaded / event.total) * 100)}%`;
+              }
             };
-            xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve(JSON.parse(xhr.responseText)) : reject(new Error("Upload failed"));
-            xhr.onerror = () => reject(new Error("Upload failed"));
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(JSON.parse(xhr.responseText));
+              } else {
+                reject(new Error(`Cloudinary responded with ${xhr.status}`));
+              }
+            };
+            xhr.onerror = () => reject(new Error("Network error during upload"));
             xhr.send(formData);
           });
-          setAttachment({ type: result.resource_type === "video" ? "video" : "image", url: result.secure_url, label: file.name });
+
+          const type = result.resource_type === "video" ? "video" : "image";
+          setAttachment({ type, url: result.secure_url, label: file.name });
         } catch (err) {
           attachPreview.classList.remove("visible");
-          showToast("Upload failed", "Could not upload that file. Please try again.");
+          showToast("Upload failed", String(err.message || err), true);
         }
+      }
+
+      // ---------------- send message ----------------
+      function setSending(isSending) {
+        sendBtn.disabled = isSending;
+        sendBtn.classList.toggle("loading", isSending);
       }
 
       async function sendMessage(event) {
         event.preventDefault();
         const message = messageInput.value.trim();
         if (!message && !pendingAttachment) return;
-        sendBtn.disabled = true;
+
+        setSending(true);
         clearTimeout(typingTimeout);
         notifyTypingState(false);
 
@@ -643,37 +1822,60 @@
         if (pendingAttachment) {
           payload.type = pendingAttachment.type;
           payload.attachmentUrl = pendingAttachment.url;
+          // Fallback for simpler backends that only store/echo a plain
+          // "message" field: without this, a GIF/image sent with no caption
+          // would post an empty message and could appear to "not send".
+          if (!message) payload.message = pendingAttachment.url;
         }
 
         try {
           const res = await fetch("/api/chat/messages", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
           });
-          if (!res.ok) {
+
+          if (res.status === 401 || res.status === 403) {
             window.location.href = "/auth";
             return;
           }
+
+          if (!res.ok) {
+            let detail = `Server responded with ${res.status}.`;
+            try {
+              const errBody = await res.json();
+              if (errBody?.error || errBody?.message) detail = errBody.error || errBody.message;
+            } catch (_) {
+              /* response wasn't JSON — keep the generic detail */
+            }
+            showToast("Message not sent", detail, true);
+            return;
+          }
+
           messageInput.value = "";
+          autoGrow();
+          charCount.textContent = "";
           pendingAttachment = null;
           attachPreview.classList.remove("visible");
           attachProgress.style.width = "0%";
+          stickToBottom = true;
           await loadMessages();
+        } catch (err) {
+          showToast("Couldn't send", "Check your connection and try again.", true);
         } finally {
-          sendBtn.disabled = false;
+          setSending(false);
         }
       }
 
+      async function logout() {
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/auth";
+      }
+
       chatForm.addEventListener("submit", sendMessage);
-      messageInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-          event.preventDefault();
-          sendMessage(event);
-        }
-      });
 
       updateNotifyButton();
+      maybeShowNotifyBanner();
       loadUser().then(loadMessages);
       setInterval(loadMessages, 5000);
       setInterval(pollTyping, 2000);

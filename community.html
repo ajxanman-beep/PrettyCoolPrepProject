@@ -238,21 +238,28 @@
         transform: translateY(-1px);
       }
 
-      .create-panel {
-        display: none;
-        margin-bottom: 1.5rem;
-      }
-
-      .create-panel.active {
-        display: block;
-      }
-
       .tab-content {
         display: none;
       }
 
       .tab-content.active {
         display: block;
+      }
+
+      .search-bar {
+        display: grid;
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+      }
+
+      .search-bar input {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+        font: inherit;
       }
 
       .card-grid {
@@ -267,6 +274,49 @@
         border-radius: 32px;
         padding: 1.75rem;
         box-shadow: 0 40px 120px rgba(0, 0, 0, 0.18);
+      }
+
+      .video-grid {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      .video-card {
+        border-radius: 28px;
+        padding: 1.5rem;
+        background: rgba(7, 15, 9, 0.92);
+        border: 1px solid rgba(125, 255, 154, 0.14);
+      }
+
+      .video-card h3 {
+        margin-top: 0;
+        color: #96ffb0;
+      }
+
+      .video-card p {
+        margin: 0.75rem 0;
+        color: #c7ffdc;
+        line-height: 1.7;
+      }
+
+      .video-meta {
+        color: #9effb8;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+      }
+
+      .video-player {
+        width: 100%;
+        max-height: 520px;
+        border-radius: 24px;
+        background: rgba(11, 22, 12, 0.95);
+        overflow: hidden;
+      }
+
+      .video-player video {
+        width: 100%;
+        height: auto;
+        display: block;
       }
 
       .panel h3,
@@ -461,23 +511,23 @@
       <div class="topbar">
         <div class="brand">
           <h1>PARALLAX</h1>
-          <p>Community hub: forums and games with a dedicated video feed page.</p>
+          <p>Community hub: forums, games, and video discovery in one place.</p>
         </div>
         <div class="top-actions">
           <span class="status-pill" id="userNote">Loading community…</span>
-          <a class="create-button" href="/upload">Upload</a>
-          <a class="create-button" href="/videos">Video Feed</a>
+          <a class="create-button" href="/upload" target="_blank" rel="noopener noreferrer">Upload</a>
         </div>
       </div>
 
       <section class="panel-hero">
         <h2>Community</h2>
-        <p>Browse forum posts and games here. Use the upload page to publish new content and the video feed page to search and watch videos.</p>
+        <p>Browse forums, games, and the integrated video feed here. Use the upload page to publish new videos in a separate tab.</p>
       </section>
 
       <div class="tab-bar" role="tablist">
         <button class="tab-button active" data-tab="forum" type="button">Forums</button>
         <button class="tab-button" data-tab="games" type="button">Games</button>
+        <button class="tab-button" data-tab="videos" type="button">Videos</button>
       </div>
 
       <section class="section">
@@ -491,6 +541,15 @@
           <p>Explore playable index.html games shared by creators.</p>
           <div id="gamesList" class="card-grid"></div>
         </div>
+        <div class="content-panel tab-content" id="videosTab">
+          <div class="search-bar">
+            <input id="searchInput" placeholder="Search videos or creators..." />
+          </div>
+          <div class="video-grid" id="videoList"></div>
+          <section id="playerSection" class="video-player" style="display:none; margin-top:1.25rem;">
+            <video id="activeVideo" controls></video>
+          </section>
+        </div>
       </section>
     </div>
 
@@ -500,6 +559,10 @@
       const userNote = document.getElementById("userNote");
       const postsList = document.getElementById("postsList");
       const gamesList = document.getElementById("gamesList");
+      const videoList = document.getElementById("videoList");
+      const searchInput = document.getElementById("searchInput");
+      const playerSection = document.getElementById("playerSection");
+      const activeVideo = document.getElementById("activeVideo");
       const mainTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")].filter((btn) => btn.dataset.tab);
       let signedIn = false;
       let username = "Guest";
@@ -521,16 +584,6 @@
           throw data;
         }
         return data;
-      };
-
-      const uploadFileToCloudinary = async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        const result = await api("/api/uploads", {
-          method: "POST",
-          body: formData
-        });
-        return result.secure_url || result.url;
       };
 
       const getRelativeTime = (timestamp) => {
@@ -649,6 +702,26 @@
           .join("");
       };
 
+      const renderVideoList = (videos) => {
+        if (!videos.length) {
+          videoList.innerHTML = `<div class="panel"><p>No videos yet. Share your own from the upload page.</p></div>`;
+          return;
+        }
+
+        videoList.innerHTML = videos
+          .map(
+            (video) => `
+              <article class="video-card" data-id="${video.id}" data-url="${video.videoUrl}" data-title="${video.title}" data-author="${video.author}">
+                <h3>${video.title}</h3>
+                <p>${video.description}</p>
+                <div class="video-meta">Posted by ${video.author} · ${getRelativeTime(video.timestamp)}</div>
+                <small>Tap to watch</small>
+              </article>
+            `
+          )
+          .join("");
+      };
+
       const loadPosts = async () => {
         const data = await api("/api/community/posts");
         renderPosts(data.posts);
@@ -659,9 +732,26 @@
         renderGames(data.games);
       };
 
-      const refreshCommunity = async () => {
-        await Promise.all([loadPosts(), loadGames()]);
+      const loadVideos = async () => {
+        const data = await api("/api/community/videos");
+        return data.videos;
       };
+
+      const refreshCommunity = async () => {
+        await Promise.all([loadPosts(), loadGames(), loadVideos().then(renderVideoList)]);
+      };
+
+      const filterVideos = (videos, query) => {
+        if (!query) return videos;
+        const lower = query.toLowerCase();
+        return videos.filter((video) => video.title.toLowerCase().includes(lower) || video.author.toLowerCase().includes(lower));
+      };
+
+      searchInput.addEventListener("input", async () => {
+        const allVideos = await loadVideos();
+        const filtered = filterVideos(allVideos, searchInput.value.trim());
+        renderVideoList(filtered);
+      });
 
       const setTab = (tab) => {
         mainTabButtons.forEach((button) => {
@@ -704,6 +794,16 @@
           if (input) input.value = "";
           await loadPosts();
         }
+      });
+
+      videoList.addEventListener("click", (event) => {
+        const card = event.target.closest(".video-card");
+        if (!card) return;
+        const selectedUrl = card.dataset.url;
+        activeVideo.src = selectedUrl;
+        activeVideo.play();
+        playerSection.style.display = "block";
+        playerSection.scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
       const init = async () => {

@@ -288,6 +288,7 @@
         <form class="form" id="authForm">
           <input type="text" id="username" placeholder="Username" autocomplete="username" required />
           <input type="password" id="password" placeholder="Password" autocomplete="current-password" required />
+          <input type="hidden" id="redirectTarget" name="redirectTarget" value="/chat" />
           <button type="submit" id="submitButton">Log in</button>
         </form>
 
@@ -334,6 +335,12 @@
         return "/chat";
       };
 
+      const redirectTarget = getRedirectTarget();
+      document.getElementById("redirectTarget").value = redirectTarget;
+      if (redirectTarget !== "/chat") {
+        document.getElementById("noticeText").textContent = "After signing in, you will return to the page you were trying to visit.";
+      }
+
       authForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         errorText.style.display = "none";
@@ -348,7 +355,8 @@
         }
 
         const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
-        const result = await postAuth(endpoint, { username, password });
+        const redirectValue = document.getElementById("redirectTarget").value;
+        const result = await postAuth(endpoint, { username, password, redirect: redirectValue });
 
         if (!result.ok) {
           errorText.textContent = result.data.error || "Unable to sign in.";
@@ -359,7 +367,7 @@
         successText.textContent = mode === "signup" ? "Account created! Redirecting…" : "Logged in! Redirecting…";
         successText.style.display = "block";
         setTimeout(() => {
-          window.location.href = getRedirectTarget();
+          window.location.href = result.data.redirect || getRedirectTarget();
         }, 650);
       });
 

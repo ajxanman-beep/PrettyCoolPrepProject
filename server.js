@@ -12,7 +12,7 @@ app.use(express.json());
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "YOUR_CLOUD_NAME",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "parallax",
   api_key: process.env.CLOUDINARY_API_KEY || "586198498726618",
   api_secret: process.env.CLOUDINARY_API_SECRET || "0HFipV4PrdIIastxqdAZSR9dA-M"
 });
@@ -97,7 +97,7 @@ app.get("/api/auth/me", (req, res) => {
 });
 
 app.post("/api/auth/signup", (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, redirect } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: "Username and password are required." });
   }
@@ -109,11 +109,12 @@ app.post("/api/auth/signup", (req, res) => {
   users[username] = { username, passwordHash: hashPassword(password) };
   const sessionId = createSession(username);
   setSessionCookie(res, sessionId);
-  res.status(201).json({ username });
+  const target = redirect && redirect.startsWith("/") ? redirect : "/chat";
+  res.status(201).json({ username, redirect: target });
 });
 
 app.post("/api/auth/login", (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, redirect } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: "Username and password are required." });
   }
@@ -125,7 +126,8 @@ app.post("/api/auth/login", (req, res) => {
 
   const sessionId = createSession(username);
   setSessionCookie(res, sessionId);
-  res.json({ username });
+  const target = redirect && redirect.startsWith("/") ? redirect : "/chat";
+  res.json({ username, redirect: target });
 });
 
 app.post("/api/auth/logout", (req, res) => {

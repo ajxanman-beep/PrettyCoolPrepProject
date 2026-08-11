@@ -43,6 +43,7 @@ const featuredRooms = [
 const users = {};
 const sessions = {};
 const chatMessages = [];
+const chatTyping = {};
 const communityPosts = [];
 const communityGames = [];
 const communityVideos = [];
@@ -78,6 +79,10 @@ const clearSessionCookie = (res) => {
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.get("/styles.css", (req, res) => {
+  res.sendFile(path.join(__dirname, "styles.css"));
 });
 
 app.get("/chat", (req, res) => {
@@ -439,20 +444,53 @@ app.post("/api/chat/messages", (req, res) => {
     return res.status(401).json({ error: "unauthorized" });
   }
 
-  const { message } = req.body;
-  if (!message) {
-    return res.status(400).json({ error: "Message is required." });
+  const { message, type, attachmentUrl } = req.body;
+  if (!message && !attachmentUrl) {
+    return res.status(400).json({ error: "Message or attachment is required." });
   }
 
   const newMessage = {
     id: chatMessages.length + 1,
     name: session.username,
-    message,
+    message: message || "",
+    type: type || (attachmentUrl ? "image" : "text"),
+    attachmentUrl: attachmentUrl || "",
     timestamp: new Date().toISOString()
   };
 
   chatMessages.push(newMessage);
   res.status(201).json(newMessage);
+});
+
+app.get("/api/chat/typing", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const cutoff = Date.now() - 3500;
+  Object.entries(chatTyping).forEach(([name, timestamp]) => {
+    if (timestamp < cutoff) {
+      delete chatTyping[name];
+    }
+  });
+
+  res.json({ typers: Object.keys(chatTyping) });
+});
+
+app.post("/api/chat/typing", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  if (req.body.typing) {
+    chatTyping[session.username] = Date.now();
+  } else {
+    delete chatTyping[session.username];
+  }
+
+  res.json({ ok: true });
 });
 
 app.post("/api/join", (req, res) => {

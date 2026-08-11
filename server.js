@@ -1,6 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
 const multer = require("multer");
 const { Readable } = require("stream");
 const cloudinary = require("cloudinary").v2;
@@ -8,14 +10,29 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "parallax",
-  api_key: process.env.CLOUDINARY_API_KEY || "586198498726618",
-  api_secret: process.env.CLOUDINARY_API_SECRET || "0HFipV4PrdIIastxqdAZSR9dA-M"
-});
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || "";
+const cloudApiKey = process.env.CLOUDINARY_API_KEY || "";
+const cloudApiSecret = process.env.CLOUDINARY_API_SECRET || "";
+const cloudinaryEnabled = Boolean(cloudName && cloudApiKey && cloudApiSecret);
+
+if (cloudinaryEnabled) {
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: cloudApiKey,
+    api_secret: cloudApiSecret
+  });
+}
+
+console.log(`Cloudinary enabled: ${cloudinaryEnabled ? "yes" : "no"}`);
+console.log(`Using CLOUDINARY_CLOUD_NAME: ${cloudinaryEnabled ? cloudName : "<not configured>"}`);
 
 const featuredRooms = [
   { id: 1, title: "Launch Lounge", description: "Meet founders and creators sharing their latest projects." },
@@ -178,17 +195,25 @@ app.post("/api/uploads", upload.single("file"), async (req, res) => {
   }
 
   try {
-    const result = await streamUpload(req.file.buffer, {
-      resource_type: "auto",
-      folder: "parallax-community",
-      use_filename: true,
-      unique_filename: true,
-      overwrite: false
-    });
-    res.status(201).json(result);
+    if (cloudinaryEnabled) {
+      const result = await streamUpload(req.file.buffer, {
+        resource_type: "auto",
+        folder: "parallax-community",
+        use_filename: true,
+        unique_filename: true,
+        overwrite: false
+      });
+      return res.status(201).json({ url: result.secure_url || result.url });
+    }
+
+    const filename = `${Date.now()}-${req.file.originalname}`;
+    const filepath = path.join(uploadDir, filename);
+    fs.writeFileSync(filepath, req.file.buffer);
+    const fileUrl = `/uploads/${filename}`;
+    return res.status(201).json({ url: fileUrl, local: true });
   } catch (error) {
-    console.error("Cloudinary upload failed:", error);
-    res.status(500).json({ error: "Upload failed." });
+    console.error("Upload failed:", error?.message || error);
+    res.status(500).json({ error: error?.message || "Upload failed." });
   }
 });
 

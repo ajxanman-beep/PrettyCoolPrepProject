@@ -9,6 +9,14 @@ This project now includes a simple Express backend using `server.js`.
 - Install dependencies: `npm install`
 - Start the server: `npm start`
 
+Cloudinary upload support is enabled by setting these environment variables:
+
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+
+If those variables are not set, uploads fall back to a local `uploads/` folder.
+
 API endpoints:
 - `GET /api/status`
 - `GET /api/community`

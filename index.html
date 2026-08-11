@@ -250,11 +250,57 @@
         line-height: 1.8;
       }
 
-      .card-grid {
+      .visual-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1.4fr minmax(280px, 1fr);
         gap: 1rem;
         margin-top: 1.35rem;
+      }
+
+      .thumbnail-card {
+        display: grid;
+        gap: 1rem;
+        border-radius: 30px;
+        padding: 1.5rem;
+        background: linear-gradient(180deg, rgba(9, 17, 11, 0.96), rgba(0, 0, 0, 0.82));
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.25);
+      }
+
+      .thumbnail-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: max-content;
+        padding: 0.55rem 1rem;
+        border-radius: 999px;
+        background: rgba(72, 255, 140, 0.16);
+        color: #d6ffdd;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+      }
+
+      .thumbnail-preview {
+        min-height: 260px;
+        border-radius: 24px;
+        background: radial-gradient(circle at top left, rgba(46, 255, 141, 0.18), transparent 28%),
+          linear-gradient(180deg, rgba(17, 38, 19, 0.96), rgba(0, 0, 0, 0.85));
+        border: 1px solid rgba(125, 255, 154, 0.12);
+        box-shadow: inset 0 0 0 1px rgba(125, 255, 154, 0.08);
+      }
+
+      .thumbnail-copy h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #9effb4;
+      }
+
+      .thumbnail-copy p {
+        margin: 0;
+        color: #c7ffd9;
+        line-height: 1.8;
       }
 
       .community-card {
@@ -384,8 +430,6 @@
       <ul class="menu-list">
         <li><a href="/">Home</a></li>
         <li><a href="/community">Community</a></li>
-        <li><a href="/videos">Video Feed</a></li>
-        <li><a href="/upload">Upload</a></li>
         <li><a href="/chat">Chat</a></li>
         <li><a href="/auth">Account</a></li>
         <li><a href="/community">Feedback</a></li>
@@ -406,7 +450,15 @@
         <div class="hero-visual">
           <h3 id="community">Community Pulse</h3>
           <p>Stay centered with a clean activity summary that feels calm and easy to scan, using subtle green accents and spacious layout.</p>
-          <div class="card-grid">
+          <div class="visual-grid">
+            <div class="thumbnail-card">
+              <div class="thumbnail-badge">Live</div>
+              <div class="thumbnail-preview"></div>
+              <div class="thumbnail-copy">
+                <h4>Featured Spotlight</h4>
+                <p>Streamlined updates, curated community highlights, and a polished dashboard feel.</p>
+              </div>
+            </div>
             <div class="community-card">
               <h3 id="games">Games</h3>
               <p>Jump into matches and gentle challenges with friendly teammates.</p>
@@ -414,10 +466,6 @@
             <div class="community-card">
               <h3>Chat</h3>
               <p>Open the chat page for clear conversation and simple message flow.</p>
-            </div>
-            <div class="community-card">
-              <h3 id="account">Account</h3>
-              <p>Adjust your profile and preferences with easy access from the sidebar.</p>
             </div>
             <div class="community-card">
               <h3 id="feedback">Feedback</h3>

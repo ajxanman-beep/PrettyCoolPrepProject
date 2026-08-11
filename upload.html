@@ -427,22 +427,19 @@
           return;
         }
 
-        const title = document.getElementById("videoTitle").value.trim();
-        const description = document.getElementById("videoDescription").value.trim();
+        const title = document.getElementById("contentTitle").value.trim();
+        const description = document.getElementById("contentDescription").value.trim();
+        const type = contentType.value;
+        const body = document.getElementById("contentBody").value.trim();
         let videoUrl = document.getElementById("videoUrl").value.trim();
         const videoFile = document.getElementById("videoFile").files[0];
+        const gameUrl = document.getElementById("gameUrl").value.trim();
 
-        if (!title || !description) {
-          errorText.textContent = "Title and description are required.";
+        if (!title || (type !== "forum" && !description)) {
+          errorText.textContent = "Title and description are required for this content type.";
           errorText.style.display = "block";
           return;
         }
-
-        const type = contentType.value;
-        const body = document.getElementById("contentBody").value.trim();
-        const videoUrl = document.getElementById("videoUrl").value.trim();
-        const videoFile = document.getElementById("videoFile").files[0];
-        const gameUrl = document.getElementById("gameUrl").value.trim();
 
         if (type === "video" && !videoUrl && !videoFile) {
           errorText.textContent = "Provide a video URL or upload a video file.";

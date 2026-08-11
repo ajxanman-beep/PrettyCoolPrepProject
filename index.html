@@ -141,16 +141,17 @@
       .page-wrap {
         margin: 0 auto;
         padding: 4.5rem 2rem 4rem 2rem;
-        width: min(1180px, calc(100% - 2rem));
+        width: 100%;
+        max-width: 1180px;
         position: relative;
       }
 
       .hero {
         display: grid;
         grid-template-columns: 1.1fr 0.9fr;
-        gap: 2rem;
+        gap: clamp(1.5rem, 3vw, 2.5rem);
         align-items: end;
-        min-height: calc(100vh - 5rem);
+        min-height: min(100vh - 5rem, 900px);
         opacity: 0;
         transform: translateY(-40px);
         animation: floatIn 1.1s ease-out forwards;
@@ -235,6 +236,7 @@
         border-radius: 36px;
         padding: 2.2rem;
         box-shadow: 0 40px 120px rgba(0, 0, 0, 0.28);
+        max-width: 100%;
       }
 
       .hero-visual h3 {
@@ -252,9 +254,10 @@
 
       .visual-grid {
         display: grid;
-        grid-template-columns: 1.4fr minmax(280px, 1fr);
+        grid-template-columns: 1.4fr minmax(260px, 1fr);
         gap: 1rem;
         margin-top: 1.35rem;
+        width: 100%;
       }
 
       .thumbnail-card {
@@ -377,6 +380,11 @@
         .hero {
           grid-template-columns: 1fr;
           min-height: auto;
+          align-items: start;
+        }
+
+        .hero-visual {
+          padding: 1.8rem;
         }
 
         .card-grid,
@@ -390,6 +398,29 @@
 
         .sidebar {
           width: 260px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page-wrap {
+          padding: 3.5rem 1.5rem 3rem 1.5rem;
+        }
+
+        .hamburger {
+          left: 0.9rem;
+          top: 0.9rem;
+        }
+
+        .sidebar {
+          width: 100%;
+        }
+
+        .hero-visual {
+          padding: 1.5rem;
+        }
+
+        .thumbnail-preview {
+          min-height: 220px;
         }
       }
 

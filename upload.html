@@ -289,32 +289,48 @@
 
       <section class="panel-hero">
         <h2>Upload center</h2>
-        <p>Keep uploads separate from browsing so video discovery stays clean and focused.</p>
+        <p>Select a content type and publish forum posts, shared games, or videos with the same upload flow.</p>
       </section>
 
       <section class="form-panel">
-        <h2>Video upload</h2>
-        <p>Submit a video URL or upload a file directly to the community feed.</p>
+        <h2>Create new content</h2>
+        <p>Choose the type of content you want to add to the community.</p>
         <form class="form" id="uploadForm">
           <div class="input-group">
-            <label for="videoTitle">Title</label>
-            <input id="videoTitle" name="title" placeholder="Video title" required />
+            <label for="contentType">Content type</label>
+            <select id="contentType" name="contentType">
+              <option value="video">Video</option>
+              <option value="forum">Forum post</option>
+              <option value="game">Game share</option>
+            </select>
           </div>
           <div class="input-group">
-            <label for="videoDescription">Description</label>
-            <textarea id="videoDescription" name="description" placeholder="Brief summary" required></textarea>
+            <label for="contentTitle">Title</label>
+            <input id="contentTitle" name="title" placeholder="Title" required />
           </div>
-          <div class="input-group">
+          <div class="input-group" id="descriptionGroup">
+            <label for="contentDescription">Description</label>
+            <textarea id="contentDescription" name="description" placeholder="Brief summary" required></textarea>
+          </div>
+          <div class="input-group" id="bodyGroup" style="display:none;">
+            <label for="contentBody">Body</label>
+            <textarea id="contentBody" name="body" placeholder="Write your post..." rows="6"></textarea>
+          </div>
+          <div class="input-group" id="videoUrlGroup">
             <label for="videoUrl">Video URL</label>
             <input id="videoUrl" name="videoUrl" placeholder="https://..." />
           </div>
-          <div class="input-group">
+          <div class="input-group" id="videoFileGroup">
             <label for="videoFile">Video file</label>
             <input id="videoFile" name="videoFile" type="file" accept="video/*" />
           </div>
-          <button class="primary-button" type="submit">Upload video</button>
+          <div class="input-group" id="gameUrlGroup" style="display:none;">
+            <label for="gameUrl">Game URL</label>
+            <input id="gameUrl" name="gameUrl" placeholder="https://..." />
+          </div>
+          <button class="primary-button" type="submit" id="submitButton">Upload video</button>
         </form>
-        <p class="notice" id="hintText">You must be signed in to upload. If you are not signed in, you will be redirected to the auth page.</p>
+        <p class="notice" id="hintText">You must be signed in to create content. If you are not signed in, you will be redirected to the auth page.</p>
         <p class="success" id="successText" style="display:none;"></p>
         <p class="error" id="errorText" style="display:none;"></p>
       </section>
@@ -328,6 +344,13 @@
       const errorText = document.getElementById("errorText");
       const successText = document.getElementById("successText");
       const hintText = document.getElementById("hintText");
+      const contentType = document.getElementById("contentType");
+      const descriptionGroup = document.getElementById("descriptionGroup");
+      const bodyGroup = document.getElementById("bodyGroup");
+      const videoUrlGroup = document.getElementById("videoUrlGroup");
+      const videoFileGroup = document.getElementById("videoFileGroup");
+      const gameUrlGroup = document.getElementById("gameUrlGroup");
+      const submitButton = document.getElementById("submitButton");
 
       function toggleSidebar() {
         sidebar.classList.toggle("open");
@@ -355,6 +378,29 @@
         });
         return result.secure_url || result.url;
       };
+
+      const updateFormType = () => {
+        const type = contentType.value;
+        descriptionGroup.style.display = type === "forum" ? "none" : "block";
+        bodyGroup.style.display = type === "forum" ? "block" : "none";
+        videoUrlGroup.style.display = type === "video" ? "block" : "none";
+        videoFileGroup.style.display = type === "video" ? "block" : "none";
+        gameUrlGroup.style.display = type === "game" ? "block" : "none";
+        submitButton.textContent = type === "forum" ? "Create post" : type === "game" ? "Share game" : "Upload video";
+        hintText.textContent = type === "forum"
+          ? "Write your forum post title and body, then publish it to the community."
+          : type === "game"
+          ? "Share a new game link with the community."
+          : "Upload a video file or add a video URL to publish to the feed.";
+
+        document.getElementById("contentDescription").required = type !== "forum";
+        document.getElementById("contentBody").required = type === "forum";
+        document.getElementById("videoUrl").required = type === "video";
+        document.getElementById("gameUrl").required = type === "game";
+      };
+
+      contentType.addEventListener("change", updateFormType);
+      updateFormType();
 
       const loadUser = async () => {
         try {
@@ -392,28 +438,63 @@
           return;
         }
 
-        if (!videoUrl && !videoFile) {
+        const type = contentType.value;
+        const body = document.getElementById("contentBody").value.trim();
+        const videoUrl = document.getElementById("videoUrl").value.trim();
+        const videoFile = document.getElementById("videoFile").files[0];
+        const gameUrl = document.getElementById("gameUrl").value.trim();
+
+        if (type === "video" && !videoUrl && !videoFile) {
           errorText.textContent = "Provide a video URL or upload a video file.";
           errorText.style.display = "block";
           return;
         }
 
+        if (type === "game" && !gameUrl) {
+          errorText.textContent = "Game URL is required for game shares.";
+          errorText.style.display = "block";
+          return;
+        }
+
+        if (type === "forum" && !body) {
+          errorText.textContent = "Forum posts need a body message.";
+          errorText.style.display = "block";
+          return;
+        }
+
         try {
-          if (videoFile) {
-            videoUrl = await uploadFileToCloudinary(videoFile);
+          let endpoint = "/api/community/videos";
+          let payload = { title, description };
+          let redirectTarget = "/videos";
+
+          if (type === "forum") {
+            endpoint = "/api/community/posts";
+            payload = { title, body };
+            redirectTarget = "/community";
+          } else if (type === "game") {
+            endpoint = "/api/community/games";
+            payload = { title, description, gameUrl };
+            redirectTarget = "/community";
+          } else {
+            if (videoFile) {
+              payload.videoUrl = await uploadFileToCloudinary(videoFile);
+            } else {
+              payload.videoUrl = videoUrl;
+            }
           }
 
-          await api("/api/community/videos", {
+          await api(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, description, videoUrl })
+            body: JSON.stringify(payload)
           });
 
-          successText.textContent = "Video uploaded to the feed. Redirecting to video page...";
+          successText.textContent = type === "forum" ? "Forum post published." : type === "game" ? "Game shared successfully." : "Video uploaded to the feed.";
           successText.style.display = "block";
           uploadForm.reset();
+          updateFormType();
           setTimeout(() => {
-            window.location.href = "/videos";
+            window.location.href = redirectTarget;
           }, 900);
         } catch (err) {
           errorText.textContent = err.error || "Upload failed. Please try again.";

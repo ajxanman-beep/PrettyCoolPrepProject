@@ -76,10 +76,19 @@
         box-shadow: 0 40px 120px rgba(0, 0, 0, 0.2);
       }
 
-      .player-card video {
+      .video-frame {
+        position: relative;
         width: 100%;
-        display: block;
+        aspect-ratio: 16 / 9;
+        max-height: 640px;
         background: #000;
+      }
+
+      .video-frame video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
       }
 
       .player-info {
@@ -241,7 +250,9 @@
 
       <div class="video-shell">
         <section class="player-card">
-          <video id="watchVideo" controls autoplay muted playsinline></video>
+          <div class="video-frame">
+            <video id="watchVideo" controls autoplay muted playsinline></video>
+          </div>
           <div class="player-info">
             <h1 class="player-title" id="videoTitle">Loading title...</h1>
             <div class="meta-row" id="videoMeta">Loading details...</div>

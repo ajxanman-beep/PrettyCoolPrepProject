@@ -200,6 +200,22 @@
         background: rgba(17, 30, 16, 0.86);
       }
 
+      .logout-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        padding: 0.95rem 1rem;
+        font-weight: 700;
+        color: #b9ffd4;
+        background: rgba(17, 30, 16, 0.82);
+        border: 1px solid rgba(125, 255, 154, 0.18);
+      }
+
+      .logout-button:hover {
+        background: rgba(44, 255, 132, 0.14);
+      }
+
       .button:hover,
       .secondary-button:hover {
         transform: translateY(-2px);
@@ -363,6 +379,7 @@
         <li><a href="/chat">Chat</a></li>
         <li><a href="#account">Account</a></li>
         <li><a href="#feedback">Feedback</a></li>
+        <li><a class="logout-button" href="/logout">Logout</a></li>
       </ul>
     </aside>
 

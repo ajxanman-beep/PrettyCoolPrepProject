@@ -115,6 +115,16 @@ app.post("/api/auth/logout", (req, res) => {
   res.json({ message: "Logged out." });
 });
 
+app.get("/logout", (req, res) => {
+  const cookies = parseCookies(req.headers.cookie);
+  const sessionId = cookies.sessionId;
+  if (sessionId) {
+    delete sessions[sessionId];
+  }
+  clearSessionCookie(res);
+  res.redirect("/auth");
+});
+
 app.get("/api/status", (req, res) => {
   res.json({ status: "ok", message: "PARALLAX backend is running." });
 });

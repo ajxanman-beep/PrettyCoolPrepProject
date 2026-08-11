@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PARALLAX Auth</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
+
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, rgba(43, 255, 134, 0.16), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 255, 85, 0.12), transparent 24%),
+          #020402;
+        color: #e5ffee;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .auth-wrap {
+        width: min(520px, 100%);
+        padding: 2rem;
+        border-radius: 32px;
+        background: rgba(10, 16, 11, 0.95);
+        border: 1px solid rgba(125, 255, 154, 0.16);
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.3);
+      }
+
+      .title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .title-row h1 {
+        margin: 0;
+        font-family: "Orbitron", sans-serif;
+        font-size: 2.4rem;
+        letter-spacing: 0.06em;
+        color: #7dff9a;
+      }
+
+      .title-row p {
+        margin: 0;
+        color: #c7ffd7;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.75rem;
+      }
+
+      .tab {
+        border-radius: 16px;
+        padding: 1rem;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        cursor: pointer;
+        color: #c7ffd7;
+      }
+
+      .tab.active {
+        background: rgba(44, 255, 132, 0.18);
+        border-color: rgba(65, 255, 142, 0.4);
+        color: #f7fff8;
+      }
+
+      .form {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .form input {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid rgba(125, 255, 154, 0.18);
+        background: rgba(11, 22, 12, 0.92);
+        color: #e5ffee;
+        padding: 1rem 1.1rem;
+        font: inherit;
+      }
+
+      .form button {
+        border: none;
+        border-radius: 999px;
+        padding: 1rem 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3bff5a 0%, #0cb45e 100%);
+        color: #041107;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+
+      .form button:hover {
+        transform: translateY(-1px);
+      }
+
+      .notice {
+        color: #b6ffd3;
+        font-size: 0.95rem;
+      }
+
+      .error {
+        color: #ff7d7d;
+      }
+
+      .success {
+        color: #9dffb7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-wrap">
+      <div class="title-row">
+        <div>
+          <h1>PARALLAX</h1>
+          <p>Login or sign up to access the chat.</p>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" id="loginTab">Log in</button>
+        <button class="tab" id="signupTab">Sign up</button>
+      </div>
+
+      <form class="form" id="authForm">
+        <input type="text" id="username" placeholder="Username" autocomplete="username" required />
+        <input type="password" id="password" placeholder="Password" autocomplete="current-password" required />
+        <button type="submit" id="submitButton">Log in</button>
+      </form>
+
+      <p class="notice" id="noticeText">Use the same username as your chat name.</p>
+      <p class="error" id="errorText" style="display:none;"></p>
+      <p class="success" id="successText" style="display:none;"></p>
+    </div>
+
+    <script>
+      const loginTab = document.getElementById("loginTab");
+      const signupTab = document.getElementById("signupTab");
+      const authForm = document.getElementById("authForm");
+      const submitButton = document.getElementById("submitButton");
+      const errorText = document.getElementById("errorText");
+      const successText = document.getElementById("successText");
+      let mode = "login";
+
+      const setMode = (newMode) => {
+        mode = newMode;
+        loginTab.classList.toggle("active", mode === "login");
+        signupTab.classList.toggle("active", mode === "signup");
+        submitButton.textContent = mode === "login" ? "Log in" : "Sign up";
+        errorText.style.display = "none";
+        successText.style.display = "none";
+        submitButton.focus();
+      };
+
+      const postAuth = async (url, body) => {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        return res.json().then((data) => ({ ok: res.ok, data }));
+      };
+
+      authForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        errorText.style.display = "none";
+        successText.style.display = "none";
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        if (!username || !password) {
+          errorText.textContent = "Username and password are required.";
+          errorText.style.display = "block";
+          return;
+        }
+
+        const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
+        const result = await postAuth(endpoint, { username, password });
+
+        if (!result.ok) {
+          errorText.textContent = result.data.error || "Unable to sign in.";
+          errorText.style.display = "block";
+          return;
+        }
+
+        successText.textContent = mode === "signup" ? "Account created! Redirecting…" : "Logged in! Redirecting…";
+        successText.style.display = "block";
+        setTimeout(() => {
+          window.location.href = "/chat";
+        }, 650);
+      });
+
+      loginTab.addEventListener("click", () => setMode("login"));
+      signupTab.addEventListener("click", () => setMode("signup"));
+    </script>
+  </body>
+</html>

@@ -51,8 +51,7 @@
 
       .brand {
         display: flex;
-        align-items: center;
-        gap: 0.9rem;
+        flex-direction: column;
       }
 
       .brand h1 {
@@ -64,11 +63,12 @@
       }
 
       .brand p {
-        margin: 0;
+        margin: 0.4rem 0 0;
         color: #c7ffd9;
       }
 
-      .button {
+      .button,
+      .logout-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -78,6 +78,7 @@
         background: rgba(17, 30, 16, 0.82);
         color: #b9ffd4;
         font-weight: 600;
+        cursor: pointer;
       }
 
       .chat-panel {
@@ -117,7 +118,12 @@
       }
 
       .message span {
-        display: block;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
         color: #c6ffd4;
         line-height: 1.7;
       }
@@ -134,13 +140,6 @@
         gap: 1rem;
       }
 
-      .chat-form-row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 1rem;
-      }
-
-      .chat-form input,
       .chat-form textarea {
         width: 100%;
         border-radius: 18px;
@@ -149,11 +148,15 @@
         color: #e5ffee;
         padding: 1rem 1.1rem;
         font: inherit;
-      }
-
-      .chat-form textarea {
         resize: vertical;
         min-height: 120px;
+      }
+
+      .chat-form-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
       }
 
       .chat-form button {
@@ -183,6 +186,12 @@
         max-width: 42rem;
       }
 
+      .user-note {
+        margin: 1rem 0 0;
+        color: #b6ffd3;
+        font-size: 0.95rem;
+      }
+
       @media (max-width: 900px) {
         .chat-box {
           min-height: 420px;
@@ -197,20 +206,23 @@
           <h1>PARALLAX</h1>
           <p>Chat Room</p>
         </div>
-        <a class="button" href="/">Back to home</a>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
+          <button class="logout-button" id="logoutButton">Logout</button>
+          <a class="button" href="/">Home</a>
+        </div>
       </div>
 
       <div class="chat-panel">
         <div>
           <p class="section-title">Live chat</p>
-          <p class="section-description">Send messages to the community and view the latest conversation in a calm, easy-to-read feed.</p>
+          <p class="section-description">Send messages to the community and keep conversation simple, calm, and readable.</p>
+          <p class="user-note" id="userNote">Loading user…</p>
         </div>
 
         <div class="chat-box">
           <div class="messages" id="messages"></div>
 
           <form class="chat-form" id="chatForm">
-            <input type="text" id="nameInput" placeholder="Your name" autocomplete="off" required />
             <textarea id="messageInput" placeholder="Write a message..." required></textarea>
             <div class="chat-form-row">
               <div></div>
@@ -224,21 +236,47 @@
     <script>
       const messagesEl = document.getElementById("messages");
       const chatForm = document.getElementById("chatForm");
-      const nameInput = document.getElementById("nameInput");
       const messageInput = document.getElementById("messageInput");
+      const userNote = document.getElementById("userNote");
+      const logoutButton = document.getElementById("logoutButton");
+      let username = "";
+
+      async function loadUser() {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          window.location.href = "/auth";
+          return;
+        }
+        const data = await res.json();
+        username = data.username;
+        userNote.textContent = `Signed in as ${username}`;
+      }
 
       async function loadMessages() {
         const res = await fetch("/api/chat/messages");
+        if (!res.ok) {
+          window.location.href = "/auth";
+          return;
+        }
         const data = await res.json();
         messagesEl.innerHTML = "";
         data.messages.forEach((message) => {
           const messageEl = document.createElement("div");
           messageEl.className = "message";
-          messageEl.innerHTML = `
-            <strong>${message.name}</strong>
-            <span>${message.message}</span>
-            <time>${new Date(message.timestamp).toLocaleString()}</time>
-          `;
+
+          const author = document.createElement("strong");
+          author.textContent = message.name;
+
+          const text = document.createElement("span");
+          text.textContent = message.message;
+          text.title = message.message;
+
+          const time = document.createElement("time");
+          time.textContent = new Date(message.timestamp).toLocaleString();
+
+          messageEl.appendChild(author);
+          messageEl.appendChild(text);
+          messageEl.appendChild(time);
           messagesEl.appendChild(messageEl);
         });
         messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -246,22 +284,33 @@
 
       async function sendMessage(event) {
         event.preventDefault();
-        const name = nameInput.value.trim();
         const message = messageInput.value.trim();
-        if (!name || !message) return;
+        if (!message) return;
 
-        await fetch("/api/chat/messages", {
+        const res = await fetch("/api/chat/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, message })
+          body: JSON.stringify({ message })
         });
 
+        if (!res.ok) {
+          window.location.href = "/auth";
+          return;
+        }
+
         messageInput.value = "";
-        loadMessages();
+        await loadMessages();
+      }
+
+      async function logout() {
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/auth";
       }
 
       chatForm.addEventListener("submit", sendMessage);
-      loadMessages();
+      logoutButton.addEventListener("click", logout);
+
+      loadUser().then(loadMessages);
       setInterval(loadMessages, 5000);
     </script>
   </body>

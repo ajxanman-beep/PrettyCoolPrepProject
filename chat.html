@@ -72,10 +72,18 @@
       .menu-list li {
         font-size: 1rem;
         font-weight: 600;
-        padding: 0.95rem 1rem;
         border-radius: 16px;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .menu-list li a {
+        display: block;
+        width: 100%;
+        min-height: 100%;
+        padding: 0.95rem 1rem;
+        border-radius: inherit;
+        color: inherit;
       }
 
       .menu-list li:hover {
@@ -346,8 +354,19 @@
       const chatForm = document.getElementById("chatForm");
       const messageInput = document.getElementById("messageInput");
       const userNote = document.getElementById("userNote");
-      const logoutButton = document.getElementById("logoutButton");
+      const sidebar = document.getElementById("sidebar");
+      const hamburger = document.querySelector(".hamburger");
       let username = "";
+
+      function toggleSidebar() {
+        sidebar.classList.toggle("open");
+      }
+
+      document.addEventListener("click", (event) => {
+        if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains("open")) {
+          sidebar.classList.remove("open");
+        }
+      });
 
       async function loadUser() {
         const res = await fetch("/api/auth/me");
@@ -416,8 +435,6 @@
       }
 
       chatForm.addEventListener("submit", sendMessage);
-      logoutButton.addEventListener("click", logout);
-
       loadUser().then(loadMessages);
       setInterval(loadMessages, 5000);
     </script>

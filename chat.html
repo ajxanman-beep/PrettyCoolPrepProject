@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PARALLAX Chat</title>
+    <link rel="stylesheet" href="/styles.css" />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap");
 
@@ -36,126 +37,6 @@
 
       button {
         font-family: inherit;
-      }
-
-      /* ---------- sidebar ---------- */
-      .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 280px;
-        padding: 2rem 1.5rem;
-        background: rgba(0, 0, 0, 0.9);
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
-        transform: translateX(-100%);
-        transition: transform 0.32s ease;
-        z-index: 60;
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .sidebar-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s ease;
-        z-index: 55;
-      }
-
-      .sidebar-backdrop.visible {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
-      .sidebar h2 {
-        margin: 0 0 1.5rem;
-        font-family: "Orbitron", sans-serif;
-        font-size: 1.6rem;
-        letter-spacing: 0.08em;
-        color: #7fff7f;
-      }
-
-      .menu-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: 0.9rem;
-      }
-
-      .menu-list li {
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        transition: background 0.2s ease, border-color 0.2s ease;
-      }
-
-      .menu-list li a {
-        display: block;
-        width: 100%;
-        min-height: 100%;
-        padding: 0.95rem 1rem;
-        border-radius: inherit;
-        color: inherit;
-      }
-
-      .menu-list li:hover {
-        background: rgba(49, 255, 140, 0.12);
-        border-color: rgba(49, 255, 140, 0.4);
-      }
-
-      .hamburger {
-        position: fixed;
-        left: 1rem;
-        top: 1rem;
-        border: none;
-        background: rgba(0, 0, 0, 0.78);
-        color: #7cff75;
-        width: 3.2rem;
-        height: 3.2rem;
-        border-radius: 1rem;
-        display: grid;
-        place-items: center;
-        z-index: 65;
-        cursor: pointer;
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
-      }
-
-      .hamburger:focus-visible {
-        outline: 2px solid #7cff75;
-        outline-offset: 3px;
-      }
-
-      .hamburger div,
-      .hamburger div::before,
-      .hamburger div::after {
-        width: 1.35rem;
-        height: 0.14rem;
-        background: currentColor;
-        border-radius: 999px;
-        position: relative;
-      }
-
-      .hamburger div::before,
-      .hamburger div::after {
-        content: "";
-        position: absolute;
-        left: 0;
-      }
-
-      .hamburger div::before {
-        top: -0.5rem;
-      }
-
-      .hamburger div::after {
-        top: 0.5rem;
       }
 
       /* ---------- layout ---------- */
@@ -1007,9 +888,7 @@
     </style>
   </head>
   <body>
-    <button class="hamburger" aria-label="Open menu" onclick="toggleSidebar()">
-      <div></div>
-    </button>
+    <button class="hamburger" aria-label="Open menu" aria-expanded="false" onclick="toggleSidebar()"><span></span></button>
 
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
 
@@ -1018,10 +897,9 @@
       <ul class="menu-list">
         <li><a href="/">Home</a></li>
         <li><a href="/community">Community</a></li>
-        <li><a href="/chat">Chat</a></li>
+        <li><a class="active" href="/chat">Chat</a></li>
         <li><a href="/auth">Account</a></li>
-        <li><a href="/community">Feedback</a></li>
-        <li><a class="logout-button" href="/logout">Logout</a></li>
+        <li><a href="/logout">Logout</a></li>
       </ul>
     </aside>
 
@@ -1200,9 +1078,15 @@
 
       // ---------------- sidebar ----------------
       function toggleSidebar(force) {
-        const open = force ?? !sidebar.classList.contains("open");
+        const open = typeof force === "boolean" ? force : !sidebar.classList.contains("open");
         sidebar.classList.toggle("open", open);
-        sidebarBackdrop.classList.toggle("visible", open);
+        if (hamburger) {
+          hamburger.classList.toggle("is-open", open);
+          hamburger.setAttribute("aria-expanded", String(open));
+        }
+        if (sidebarBackdrop) {
+          sidebarBackdrop.classList.toggle("visible", open);
+        }
       }
 
       document.addEventListener("click", (event) => {

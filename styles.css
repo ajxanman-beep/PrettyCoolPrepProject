@@ -113,7 +113,7 @@ select:focus-visible {
   position: fixed;
   left: 1rem;
   top: 1rem;
-  z-index: 40;
+  z-index: 65;
   display: grid;
   place-items: center;
   width: 3.1rem;
@@ -124,6 +124,13 @@ select:focus-visible {
   color: var(--color-accent);
   cursor: pointer;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.hamburger:hover {
+  border-color: var(--color-border-strong);
+  background: rgba(10, 20, 12, 0.9);
+  transform: scale(1.05);
 }
 
 .hamburger span,
@@ -134,7 +141,7 @@ select:focus-visible {
   height: 0.14rem;
   border-radius: var(--radius-full);
   background: currentColor;
-  transition: transform 0.24s ease, opacity 0.24s ease;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease;
 }
 
 .hamburger span {
@@ -152,10 +159,6 @@ select:focus-visible {
   top: -0.5rem;
 }
 
-.hamburger span::after {
-  top: 0.5rem;
-}
-
 .hamburger.is-open span {
   transform: rotate(45deg);
 }
@@ -171,18 +174,37 @@ select:focus-visible {
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
-  z-index: 35;
+  z-index: 60;
   width: min(280px, 100vw);
   padding: 5rem 1.2rem 1.5rem;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(2, 6, 3, 0.94);
   border-right: 1px solid var(--color-border);
   transform: translateX(-100%);
-  transition: transform 0.28s ease;
-  backdrop-filter: blur(18px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar.open {
   transform: translateX(0);
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 55;
+}
+
+.sidebar-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .sidebar h2 {
@@ -190,6 +212,7 @@ select:focus-visible {
   color: var(--color-accent);
   font-family: var(--font-display);
   font-size: 1.35rem;
+  letter-spacing: 0.08em;
 }
 
 .menu-list {
@@ -201,21 +224,31 @@ select:focus-visible {
 }
 
 .menu-list a {
-  display: block;
-  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.035);
   color: var(--color-text-muted);
   font-weight: 700;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.menu-list a:hover,
-.menu-list a.active {
+.menu-list a:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-hover);
-  transform: translateX(3px);
+  color: #ffffff;
+  transform: translateX(6px);
+  box-shadow: 0 4px 20px rgba(49, 255, 140, 0.15);
+}
+
+.menu-list a.active {
+  border-color: var(--color-border-strong);
+  background: rgba(49, 255, 140, 0.18);
+  color: #3bff5a;
+  box-shadow: 0 0 15px rgba(49, 255, 140, 0.2);
 }
 
 .page-wrap {
@@ -692,10 +725,13 @@ select:focus {
   margin: 0;
   color: #7dff9a;
   font-family: var(--font-display);
-  font-size: clamp(4rem, 11vw, 8rem);
-  line-height: 0.88;
-  letter-spacing: 0;
+  font-size: clamp(2.8rem, 6.8vw, 5.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
   text-shadow: 0 0 34px rgba(125, 255, 154, 0.36);
+  word-break: normal;
+  overflow-wrap: normal;
+  max-width: 100%;
 }
 
 .hero-copy p {

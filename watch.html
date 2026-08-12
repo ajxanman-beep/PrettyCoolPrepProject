@@ -8,14 +8,13 @@
   </head>
   <body>
     <button class="hamburger" aria-label="Open menu" aria-expanded="false" onclick="toggleSidebar()"><span></span></button>
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
     <aside class="sidebar" id="sidebar">
       <h2>MENU</h2>
       <ul class="menu-list">
         <li><a href="/">Home</a></li>
         <li><a href="/community">Community</a></li>
-        <li><a href="/videos">Videos</a></li>
         <li><a href="/chat">Chat</a></li>
-        <li><a href="/upload">Upload</a></li>
         <li><a href="/auth">Account</a></li>
         <li><a href="/logout">Logout</a></li>
       </ul>
@@ -71,6 +70,7 @@
     <script>
       const sidebar = document.getElementById("sidebar");
       const hamburger = document.querySelector(".hamburger");
+      const sidebarBackdrop = document.getElementById("sidebarBackdrop");
       const watchVideo = document.getElementById("watchVideo");
       const videoTitle = document.getElementById("videoTitle");
       const videoMeta = document.getElementById("videoMeta");
@@ -86,15 +86,17 @@
       const videoId = new URLSearchParams(window.location.search).get("id");
       let currentVideo = null;
 
-      function toggleSidebar() {
-        const isOpen = sidebar.classList.toggle("open");
+      function toggleSidebar(forceState) {
+        const isOpen = typeof forceState === "boolean" ? forceState : !sidebar.classList.contains("open");
+        sidebar.classList.toggle("open", isOpen);
         hamburger.classList.toggle("is-open", isOpen);
         hamburger.setAttribute("aria-expanded", String(isOpen));
+        if (sidebarBackdrop) sidebarBackdrop.classList.toggle("visible", isOpen);
       }
 
       document.addEventListener("click", (event) => {
         if (!sidebar.contains(event.target) && !hamburger.contains(event.target) && sidebar.classList.contains("open")) {
-          toggleSidebar();
+          toggleSidebar(false);
         }
       });
 

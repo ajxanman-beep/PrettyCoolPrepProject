@@ -73,9 +73,9 @@
       const videoList = document.getElementById("videoList");
       const searchInput = document.getElementById("searchInput");
       const mainTabButtons = [...document.querySelectorAll(".tab-bar > .tab-button")];
-      const sidebar = document.getElementById("sidebar");
-      const hamburger = document.querySelector(".hamburger");
       const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+      let username = "Guest";
+      let cachedVideos = [];
 
       function toggleSidebar(forceState) {
         const isOpen = typeof forceState === "boolean" ? forceState : !sidebar.classList.contains("open");
